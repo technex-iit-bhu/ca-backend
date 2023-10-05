@@ -33,12 +33,15 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'Authentication',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [
@@ -69,6 +72,8 @@ TEMPLATES = [
     },
 ]
 
+AUTH_USER_MODEL = "Authentication.UserAccount"
+AUTHENTICATION_BACKENDS = ["Authentication.backends.AuthBackend"]
 WSGI_APPLICATION = 'ca_backend.wsgi.application'
 
 
