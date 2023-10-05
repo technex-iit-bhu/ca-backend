@@ -49,3 +49,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 def check(data):
     return authenticate(email=data["email"], password=data["password"])
+
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
+
+    class Meta:
+        model = UserAccount
+        fields = ("username", "password")
