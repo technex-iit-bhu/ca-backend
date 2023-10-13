@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from rest_framework import generics, authentication
+from rest_framework import generics, authentication, permissions
 from .models import Task
 from .serializers import TaskSerializer
-from . import permissions
+from . import permissions as CustomPerms
 
 
 # Create your views here.
@@ -16,5 +16,5 @@ class TaskListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
 
     authentication_classes = [authentication.SessionAuthentication]
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated,CustomPerms.IsAdminUser]
 
