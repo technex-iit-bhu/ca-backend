@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics, serializers, status
+from rest_framework import generics, serializers, status, authentication, permissions
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth import authenticate,login,logout
@@ -15,6 +15,8 @@ from .serializers import (
 class RegisterView(generics.GenericAPIView):
     queryset = UserAccount.objects.all()
     serializer_class = RegisterSerializer
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -44,6 +46,8 @@ class LoginView(generics.GenericAPIView):
     """
 
     serializer_class = LoginSerializer
+    permission_classes = [permissions.AllowAny]
+
 
     @swagger_auto_schema(
         responses={
