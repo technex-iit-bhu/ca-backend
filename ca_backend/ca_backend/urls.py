@@ -32,7 +32,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("auth/", include("Authentication.urls"))
+    path("auth/", include("Authentication.urls")),
+    path("tasks/", include("Task.urls"))
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
