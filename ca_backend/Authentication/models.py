@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, Group
-
+from Task.models import Task
 # Create your models here.
 
 ROLE_CHOICES = (
@@ -33,3 +33,9 @@ class UserAccount(AbstractBaseUser):
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
+
+
+class CompletedTasks(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    
