@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from .models import UserAccount
 from rest_framework.exceptions import ValidationError
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
 
 def check_mobile_number(value):
     if len(value) == 10 and value.isdigit():
@@ -29,7 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
         ],
     )
-    password = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, required=True, validators=[password_validation.validate_password])
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     college = serializers.CharField(
