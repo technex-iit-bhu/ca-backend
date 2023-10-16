@@ -30,6 +30,7 @@ class UserAccount(AbstractBaseUser):
     pin_code = models.IntegerField()
     why_choose = models.TextField()
     were_you_ca = models.BooleanField(default=False)
+    points = models.IntegerField(default=0)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]

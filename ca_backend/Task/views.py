@@ -1,8 +1,11 @@
 from django.shortcuts import render
-from rest_framework import generics, mixins
+from rest_framework import generics, mixins, status
 from .models import Task
 from .serializers import TaskSerializer
 from . import permissions as CustomPerms
+from Authentication.models import UserAccount
+from .serializers import LeaderboardSerializer
+from rest_framework.response import Response
 
 
 # Create your views here.
@@ -31,3 +34,15 @@ class TaskManipulateAPIView(generics.GenericAPIView, mixins.RetrieveModelMixin, 
     
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+    
+
+class TaskLeaderboardView(generics.GenericAPIView):
+    def get(self,request):
+        all_users=UserAccount.objects.filter()
+        # serializer.
+        all_users=all_users.order_by('-points')
+        # print(all_users)
+        serializer=LeaderboardSerializer(all_users,many=True)
+        serializer_data=serializer.data
+        print(serializer_data)
+        return Response(serializer_data,status=status.HTTP_200_OK)

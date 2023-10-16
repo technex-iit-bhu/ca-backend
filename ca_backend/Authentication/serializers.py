@@ -42,6 +42,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     pin_code = serializers.IntegerField()
     why_choose = serializers.CharField(max_length=255)
     were_you_ca = serializers.BooleanField(default=False)
+    points = serializers.IntegerField(default=0)
 
     class Meta:
         model = UserAccount

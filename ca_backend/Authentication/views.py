@@ -23,6 +23,7 @@ class RegisterView(generics.GenericAPIView):
             user = check(request.data)
             if user is None:
                 user = serializer.save()
+                #todo: send verification link by email
                 return Response(
                     {"success": "Verification link has been sent by email!"},
                     status=status.HTTP_200_OK,
