@@ -17,6 +17,14 @@ class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
     authentication_classes = []
     permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "Verification link has been sent by email!"}""",
+            226: """ {"error": "User with same credentials already exists!"}""",
+            409: """Conflict Errors""",
+        }
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
