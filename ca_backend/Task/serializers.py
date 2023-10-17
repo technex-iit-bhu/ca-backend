@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Task
-from Authentication.models import UserAccount
+from Authentication.models import UserProfile
 
 class TaskSerializer(serializers.ModelSerializer):
     """
@@ -13,5 +13,5 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class LeaderboardSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserAccount
-        fields = ['username','points']
+        model = UserProfile
+        fields = ["user_name",'points']

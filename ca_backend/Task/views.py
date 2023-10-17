@@ -3,7 +3,7 @@ from rest_framework import generics, mixins, status
 from .models import Task
 from .serializers import TaskSerializer
 from . import permissions as CustomPerms
-from Authentication.models import UserAccount
+from Authentication.models import UserProfile
 from .serializers import LeaderboardSerializer
 from rest_framework.response import Response
 
@@ -38,11 +38,8 @@ class TaskManipulateAPIView(generics.GenericAPIView, mixins.RetrieveModelMixin, 
 
 class TaskLeaderboardView(generics.GenericAPIView):
     def get(self,request):
-        all_users=UserAccount.objects.filter()
-        # serializer.
-        all_users=all_users.order_by('-points')
-        # print(all_users)
-        serializer=LeaderboardSerializer(all_users,many=True)
+        all_users_pf=UserProfile.objects.all()
+        all_users_pf=all_users_pf.order_by('-points')
+        serializer=LeaderboardSerializer(all_users_pf,many=True)
         serializer_data=serializer.data
-        print(serializer_data)
         return Response(serializer_data,status=status.HTTP_200_OK)

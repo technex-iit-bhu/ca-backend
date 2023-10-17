@@ -17,8 +17,16 @@ STATUS_CHOICES = (
 class UserAccount(AbstractBaseUser):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
+    referral_code=models.CharField(max_length=100,unique=True)
+
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["email"]
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
+    user_name = models.CharField(max_length=100, unique=True)
     date_joined = models.DateTimeField(verbose_name="date joined", auto_now_add=True)
-    role = models.IntegerField(choices=ROLE_CHOICES, default=1)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -32,5 +40,5 @@ class UserAccount(AbstractBaseUser):
     were_you_ca = models.BooleanField(default=False)
     points = models.IntegerField(default=0)
 
-    USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["email"]
+    def __str__(self):
+        return self.user.username
