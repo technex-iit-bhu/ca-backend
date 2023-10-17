@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import UserAccount
+from .models import UserAccount, CompletedTasks
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 
@@ -58,3 +58,9 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
         fields = ("username", "password")
+
+
+class CompletedTasksSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CompletedTasks
+        fields = "__all__"
