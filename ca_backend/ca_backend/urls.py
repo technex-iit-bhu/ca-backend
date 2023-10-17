@@ -9,7 +9,6 @@ from drf_yasg.generators import OpenAPISchemaGenerator
 from rest_framework import permissions
 
 
-
 class SchemaGenerator(OpenAPISchemaGenerator):
     def get_schema(self, request=None, public=False):
         schema = super().get_schema(request, public)
@@ -30,7 +29,6 @@ schema_view = get_schema_view(
     generator_class=SchemaGenerator,
     permission_classes=(permissions.AllowAny,),
 )
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
