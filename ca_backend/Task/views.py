@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics, mixins, response, permissions
+from rest_framework import generics, mixins, response, permissions, status
 from .models import Task
 from .serializers import TaskSerializer
 from Authentication.models import CompletedTasks, UserTasksSent
@@ -95,3 +95,9 @@ class TaskUserRequestSentAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return UserTasksSent.objects.filter(user=self.request.user.id)
+    
+class Status200ReturnView(generics.GenericAPIView):
+
+    def get(self, request):
+        return response.Response({"detail":"Status 200 "}, status=status.HTTP_200_OK)
+
