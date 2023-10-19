@@ -39,3 +39,7 @@ class CompletedTasks(models.Model):
     user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     
+
+class UserTasksSent(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)

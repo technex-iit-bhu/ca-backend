@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import UserAccount, CompletedTasks
+from .models import UserAccount, CompletedTasks, UserTasksSent
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 
@@ -64,3 +64,9 @@ class CompletedTasksSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompletedTasks
         fields = "__all__"
+
+
+class UserTaskSentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserTasksSent
+        fields = ["task"]
