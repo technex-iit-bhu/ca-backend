@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import UserAccount
+from .models import UserAccount,UserProfile
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 
@@ -30,18 +30,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         ],
     )
     password = serializers.CharField(write_only=True, required=True, validators=[password_validation.validate_password])
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
-    college = serializers.CharField(
-        required=True,
-    )
-    year = serializers.IntegerField(required=True)
-    phone_no = serializers.CharField(required=True, validators=[check_mobile_number])
-    whatsapp_no = serializers.CharField(required=True, validators=[check_mobile_number])
-    postal_address = serializers.CharField(max_length=255, required=True)
-    pin_code = serializers.IntegerField()
-    why_choose = serializers.CharField(max_length=255)
-    were_you_ca = serializers.BooleanField(default=False)
+    id = serializers.IntegerField(read_only=True)
+    
 
     class Meta:
         model = UserAccount
@@ -58,3 +48,36 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
         fields = ("username", "password")
+
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(
+        required=True,
+    )
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    college = serializers.CharField(
+        required=True,
+    )
+    year = serializers.IntegerField(required=True)
+    phone_no = serializers.CharField(required=True, validators=[check_mobile_number])
+    whatsapp_no = serializers.CharField(required=True, validators=[check_mobile_number])
+    postal_address = serializers.CharField(max_length=255, required=True)
+    pin_code = serializers.IntegerField()
+    why_choose = serializers.CharField(max_length=255)
+    were_you_ca = serializers.BooleanField(default=False)
+    points = serializers.IntegerField(default=0)
+
+    class Meta:
+        model=UserProfile
+        fields="__all__"
+
+
+
+class UserSerializer(serializers.ModelSerializer):
+    userprofile=ProfileSerializer()
+    class Meta:
+        model=UserAccount
+        fields=("username","email","userprofile")
+
