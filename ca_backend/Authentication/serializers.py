@@ -46,6 +46,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
         fields = "__all__"
+        read_only_fields = ["role", "status", "date_joined"]
 
 def check(data):
     return authenticate(email=data["email"], password=data["password"])
