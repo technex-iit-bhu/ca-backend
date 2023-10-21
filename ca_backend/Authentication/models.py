@@ -18,6 +18,7 @@ class UserAccount(AbstractBaseUser):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
     referral_code=models.CharField(max_length=100,unique=True)
+    role=models.IntegerField(choices=ROLE_CHOICES, default=1)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
