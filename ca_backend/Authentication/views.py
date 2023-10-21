@@ -13,7 +13,8 @@ from .serializers import (
     LoginSerializer,
     check,
     UserSerializer,
-    CombinedRegisterProfileSerializer
+    CombinedRegisterProfileSerializer,
+    DummySerializer
 )
 import bcrypt  
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -101,3 +102,12 @@ class UserProfileView(generics.GenericAPIView):
         user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class StatusCheck(generics.GenericAPIView):
+    serializer_class = DummySerializer
+    def get(request, user):
+        return Response(
+            {"message":"Working"},
+            status = status.HTTP_200_OK,
+                )
+   
