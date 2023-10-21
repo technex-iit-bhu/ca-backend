@@ -1,3 +1,5 @@
+import datetime
+import uuid
 from django.shortcuts import render
 from rest_framework import generics, serializers, status, authentication, permissions
 from rest_framework.response import Response
@@ -6,15 +8,20 @@ from django.contrib.auth import authenticate,login,logout
 from drf_yasg.utils import swagger_auto_schema
 from .models import UserAccount
 from .serializers import (
+    ProfileSerializer,
     RegisterSerializer,
     LoginSerializer,
-    check
+    check,
+    UserSerializer,
+    CombinedRegisterProfileSerializer
 )
+import bcrypt  
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 # Create your views here.
 class RegisterView(generics.GenericAPIView):
     queryset = UserAccount.objects.all()
-    serializer_class = RegisterSerializer
+    serializer_class = CombinedRegisterProfileSerializer
     authentication_classes = []
     permission_classes = [permissions.AllowAny]
 
@@ -26,69 +33,71 @@ class RegisterView(generics.GenericAPIView):
         }
     )
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            user = check(request.data)
-            if user is None:
-                user = serializer.save()
+        user = check(request.data)
+        if user is not None:
+            return Response(
+                {"error": "User with same credentials already exists!"},
+                status=status.HTTP_226_IM_USED,
+            )
+        request.data["referral_code"]=f'{uuid.uuid4()}_{datetime.datetime.now()}'
+        raw_password = request.data.get("password")
+        hashed_password = bcrypt.hashpw(raw_password.encode("utf-8"), bcrypt.gensalt())
+        request.data["password"] = hashed_password.decode("utf-8")
+
+        user_serializer = RegisterSerializer(data=request.data)
+        if user_serializer.is_valid():
+            user = user_serializer.save()
+            request.data["user"] = user.id
+            request.data["user_name"]=user.username
+            profile_serializer = ProfileSerializer(data=request.data)
+            if not profile_serializer.is_valid():
+                user.delete()
                 return Response(
-                    {"success": "Verification link has been sent by email!"},
-                    status=status.HTTP_200_OK,
+                    profile_serializer.errors, status=status.HTTP_409_CONFLICT
                 )
-            else:
-                return Response(
-                    {"error": "User with same credentials already exists!"},
-                    status=status.HTTP_226_IM_USED,
-                )
+            
+            profile_serializer.save(user=user)
+            #todo: send verification link by email
+            return Response(
+                {"success": "Verification link has been sent by email!"},
+                status=status.HTTP_200_OK,
+            )
+            
+                
         else:
             error = {}
-            for err in serializer.errors:
-                error[err] = serializer.errors[err][0]
+            for err in user_serializer.errors:
+                error[err] = user_serializer.errors[err][0]
             return Response(error, status=status.HTTP_409_CONFLICT)
 
 
-class LoginView(generics.GenericAPIView):
-    """
-    Implement login functionality, taking email and password
-    as input, and returning the Token.
-    """
-
-    serializer_class = LoginSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-    @swagger_auto_schema(
-        responses={
-            200: """{ "token" : "......" }""",
-            400: """{"error": "Please provide both username and password"}""",
-            401: """{"error": "Please check your credentials...cannot login!"} 
-                    {"error": "Please verify your email first and then login."}""",
-            403: """{"error": "Your account has been deleted. For queries contact Registrations and Enquiry numbers mentioned in Contact Us section!"}""",
-        }
-    )
+class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
-        if username is None or password is None:
-            return Response(
-                {"error": "Please provide both username and password"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        user = authenticate(username=username, password=password)
-        if not user:
-            return Response(
-                {"error": "Please check your credentials...cannot login!"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-       #TODO: check what to do if user is deleted or not verified
-        # elif user.is_active is False:
-        #     return Response(
-        #         {"error": "Please verify your email first and then login."},
-        #         status=status.HTTP_401_UNAUTHORIZED,
-        #     )
 
-        login(request, user)
-        # payload = api_settings.JWT_PAYLOAD_HANDLER(user)
-        # token = api_settings.JWT_ENCODE_HANDLER(payload)
-        role = user.role
-        return Response({"token": "rndm-token", "role": role})
+        try:
+            user = UserAccount.objects.get(username=username)
+        except UserAccount.DoesNotExist:
+            return Response(
+                {"error": "User does not exist."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+        return Response(
+            {"error": "Invalid password."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class UserProfileView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class=UserSerializer
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

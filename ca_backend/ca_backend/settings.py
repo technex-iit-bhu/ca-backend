@@ -174,3 +174,7 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.BCryptPasswordHasher',
+]

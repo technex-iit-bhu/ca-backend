@@ -1,8 +1,12 @@
 from django.shortcuts import render
-from rest_framework import generics, mixins
+from rest_framework import generics, mixins, status
 from .models import Task
 from .serializers import TaskSerializer
 from . import permissions as CustomPerms
+from Authentication.models import UserProfile
+from .serializers import LeaderboardSerializer
+from rest_framework.response import Response
+from .permissions import IsAdminUser, IsStaffUser
 
 
 # Create your views here.
@@ -14,6 +18,7 @@ class TaskListCreateAPIView(generics.ListCreateAPIView):
     """
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    permission_classes = [IsStaffUser]
 
 class TaskManipulateAPIView(generics.GenericAPIView, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, mixins.UpdateModelMixin):
     """
@@ -22,6 +27,8 @@ class TaskManipulateAPIView(generics.GenericAPIView, mixins.RetrieveModelMixin, 
     queryset = Task.objects.all()
     lookup_field = 'pk'
     serializer_class = TaskSerializer
+    permission_classes = [IsStaffUser]
+
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
@@ -31,3 +38,14 @@ class TaskManipulateAPIView(generics.GenericAPIView, mixins.RetrieveModelMixin, 
     
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+    
+
+class TaskLeaderboardView(generics.GenericAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = LeaderboardSerializer
+    def get(self,request):
+        all_users_pf=UserProfile.objects.all()
+        all_users_pf=all_users_pf.order_by('-points')
+        serializer=LeaderboardSerializer(all_users_pf,many=True)
+        serializer_data=serializer.data
+        return Response(serializer_data,status=status.HTTP_200_OK)
