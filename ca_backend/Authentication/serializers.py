@@ -67,7 +67,6 @@ class ProfileSerializer(serializers.ModelSerializer):
     why_choose = serializers.CharField(max_length=255)
     were_you_ca = serializers.BooleanField(default=False)
     points = serializers.IntegerField(default=0)
-    role=serializers.IntegerField(default=1)
     class Meta:
         model=UserProfile
         fields="__all__"
