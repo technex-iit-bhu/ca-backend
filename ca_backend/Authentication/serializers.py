@@ -114,3 +114,5 @@ class UserSerializer(serializers.ModelSerializer):
         model=UserAccount
         fields=("username","email","userprofile")
 
+class DummySerializer(serializers.Serializer):
+    pass

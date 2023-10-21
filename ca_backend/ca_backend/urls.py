@@ -7,6 +7,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from drf_yasg.generators import OpenAPISchemaGenerator
 from rest_framework import permissions
+from Authentication.views import StatusCheck
 
 
 class SchemaGenerator(OpenAPISchemaGenerator):
@@ -33,7 +34,8 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("auth/", include("Authentication.urls")),
-    path("tasks/", include("Task.urls"))
+    path("tasks/", include("Task.urls")),
+    path("status/", StatusCheck.as_view(), name="status"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += [
