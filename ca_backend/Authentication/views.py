@@ -50,6 +50,7 @@ class RegisterView(generics.GenericAPIView):
             user = user_serializer.save()
             request.data["user"] = user.id
             request.data["user_name"]=user.username
+            request.data["points"]=0
             profile_serializer = ProfileSerializer(data=request.data)
             if not profile_serializer.is_valid():
                 user.delete()
