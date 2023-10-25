@@ -16,6 +16,7 @@ from .serializers import (
     CombinedRegisterProfileSerializer,
     DummySerializer
 )
+from .send_email import send_verification_email
 import bcrypt  
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -58,7 +59,8 @@ class RegisterView(generics.GenericAPIView):
                 )
             
             profile_serializer.save(user=user)
-            #todo: send verification link by email
+            email_token=uuid.uuid4()
+            send_verification_email(user.email, email_token)
             return Response(
                 {"success": "Verification link has been sent by email!"},
                 status=status.HTTP_200_OK,
