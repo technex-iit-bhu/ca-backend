@@ -104,9 +104,12 @@ class UserProfileView(generics.GenericAPIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+from . import send_email
 class StatusCheck(generics.GenericAPIView):
     serializer_class = DummySerializer
     def get(request, user):
+        print("hello")
+        send_email.send_verification_email("ayushelectric27@gmail.com","helorewrew efwfdsfds")
         return Response(
             {"message":"Working"},
             status = status.HTTP_200_OK,
