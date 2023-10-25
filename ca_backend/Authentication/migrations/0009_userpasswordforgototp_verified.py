@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('Authentication', '0008_userpasswordforgototp_has_been_used'),
+        ("Authentication", "0008_userpasswordforgototp_has_been_used"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userpasswordforgototp',
-            name='verified',
+            model_name="userpasswordforgototp",
+            name="verified",
             field=models.BooleanField(default=False),
         ),
     ]
