@@ -68,7 +68,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES':(
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-        'Task.permissions.IsAdminUser'
+        'ca_backend.permissions.IsAdminUser'
     )
 }
 

@@ -5,7 +5,7 @@ def send_verification_email(rec_email, token):
     """
     Function to send verification email to the user 
     """
-    msg=f"Subject:Verify your email\n\nClick {config('BACKEND_URL')}/verify/{token} to verify your email."
+    msg=f"Subject:Your Technex account\n\nOur team will verify your account shortly, after which you will be able to login to your account."
 
 
     with smtplib.SMTP("smtp.gmail.com", port=587) as connection:

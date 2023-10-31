@@ -6,15 +6,18 @@ from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth import authenticate,login,logout
 from drf_yasg.utils import swagger_auto_schema
-from .models import UserAccount
+
+from ca_backend.permissions import IsAdminUser
+from .models import UserAccount, VerificationModel
 from .serializers import (
     ProfileSerializer,
     RegisterSerializer,
     LoginSerializer,
+    VerificationSerializer,
     check,
     UserSerializer,
     CombinedRegisterProfileSerializer,
-    DummySerializer
+    
 )
 from .send_email import send_verification_email
 import bcrypt  
@@ -52,6 +55,7 @@ class RegisterView(generics.GenericAPIView):
             request.data["user"] = user.id
             request.data["user_name"]=user.username
             request.data["points"]=0
+            request.data["status"]="P"
             profile_serializer = ProfileSerializer(data=request.data)
             if not profile_serializer.is_valid():
                 user.delete()
@@ -61,6 +65,8 @@ class RegisterView(generics.GenericAPIView):
             
             profile_serializer.save(user=user)
             email_token=uuid.uuid4()
+            verif_row=VerificationModel(userid=user,email_token=email_token)
+            verif_row.save()
             send_verification_email(user.email, email_token)
             return Response(
                 {"success": "Verification link has been sent by email!"},
@@ -106,14 +112,49 @@ class UserProfileView(generics.GenericAPIView):
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-from . import send_email
+
 class StatusCheck(generics.GenericAPIView):
-    serializer_class = DummySerializer
     def get(request, user):
-        print("hello")
-        send_email.send_verification_email("ayushelectric27@gmail.com","helorewrew efwfdsfds")
         return Response(
             {"message":"Working"},
             status = status.HTTP_200_OK,
                 )
    
+
+class VerifyTokenView(generics.GenericAPIView):
+    permission_classes = [IsAdminUser]
+    def get(self,request):
+        vm_obs = VerificationModel.objects.filter()
+        
+        # for vm in vm_obs:
+        #     print(f"User ID: {vm.userid.username+vm.userid.email}, Email Token: {vm.email_token}")
+        unverified_users_s = VerificationSerializer(data=vm_obs,many=True,raise_exception=True)
+        try:
+
+            unverified_users_s.is_valid()
+        except Exception as e:
+            print(e)
+        print("hello")
+        unverified_users = unverified_users_s.data
+        print(unverified_users)
+        return Response(
+            {"unverified_users":"unverified_users"},
+            status = status.HTTP_200_OK,
+                )
+    def post(self, request):
+        try:
+            verif_row = VerificationModel.objects.get(email_token=request.get("email_token"))
+        except VerificationModel.DoesNotExist:
+            return Response(
+                {"error": "Invalid token!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        userid = verif_row.userid
+        user=UserAccount.objects.first(id=userid)
+        user.status = "V"
+        user.save()
+        verif_row.delete()
+        return Response(
+            {"success": "User verified successfully!"},
+            status=status.HTTP_200_OK,
+        )

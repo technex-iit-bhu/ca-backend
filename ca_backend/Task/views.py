@@ -2,11 +2,10 @@ from django.shortcuts import render
 from rest_framework import generics, mixins, status
 from .models import Task
 from .serializers import TaskSerializer
-from . import permissions as CustomPerms
 from Authentication.models import UserProfile
 from .serializers import LeaderboardSerializer
 from rest_framework.response import Response
-from .permissions import IsAdminUser, IsStaffUser
+from ca_backend.permissions import IsAdminUser, IsStaffUser
 
 
 # Create your views here.
