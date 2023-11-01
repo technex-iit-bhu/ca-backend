@@ -32,7 +32,6 @@ else:
 
 
 ALLOWED_HOSTS = ["*"]
-CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
 
@@ -48,7 +47,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     'rest_framework_simplejwt',
-    "corsheaders",
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +62,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
