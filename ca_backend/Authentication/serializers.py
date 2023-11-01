@@ -137,5 +137,16 @@ class VerifyOTPSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     otp = serializers.CharField(required=True)
 
-class DummySerializer(serializers.Serializer):
-    pass
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password1 = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[password_validation.validate_password],
+    )
+    password2 = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[password_validation.validate_password],
+    )
