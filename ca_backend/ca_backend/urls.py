@@ -13,12 +13,13 @@ from Authentication.views import StatusCheck
 class SchemaGenerator(OpenAPISchemaGenerator):
     def get_schema(self, request=None, public=False):
         schema = super().get_schema(request, public)
-        RUNNING_DEVSERVER = (len(sys.argv) > 1 and sys.argv[1] == 'runserver')
+        RUNNING_DEVSERVER = len(sys.argv) > 1 and sys.argv[1] == "runserver"
         if not RUNNING_DEVSERVER:
             schema.schemes = ["https", "http"]
         else:
             schema.schemes = ["http", "https"]
         return schema
+
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -32,7 +33,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("auth/", include("Authentication.urls")),
     path("tasks/", include("Task.urls")),
     path("status/", StatusCheck.as_view(), name="status"),
