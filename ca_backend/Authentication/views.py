@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, serializers, status, authentication, permissions
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate,login,logout
 from drf_yasg.utils import swagger_auto_schema
 
 from ca_backend.permissions import IsAdminUser
-from .models import UserAccount, VerificationModel
+from .models import UserAccount, VerificationModel, UserProfile
 from .serializers import (
     ProfileSerializer,
     RegisterSerializer,
@@ -124,37 +124,37 @@ class StatusCheck(generics.GenericAPIView):
 class VerifyTokenView(generics.GenericAPIView):
     permission_classes = [IsAdminUser]
     def get(self,request):
-        vm_obs = VerificationModel.objects.filter()
-        
-        # for vm in vm_obs:
-        #     print(f"User ID: {vm.userid.username+vm.userid.email}, Email Token: {vm.email_token}")
-        unverified_users_s = VerificationSerializer(data=vm_obs,many=True,raise_exception=True)
         try:
-
-            unverified_users_s.is_valid()
+            vm_obs = VerificationModel.objects.all()
+            profiles = UserProfile.objects.filter(user__in=[vm_ob.userid for vm_ob in vm_obs])
+            serializer = ProfileSerializer(profiles, many=True)
+            tokens=[vm_ob.email_token for vm_ob in vm_obs]
+            for i,token in enumerate(tokens):
+                serializer.data[i]["email_token"]=token
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            print(e)
-        print("hello")
-        unverified_users = unverified_users_s.data
-        print(unverified_users)
-        return Response(
-            {"unverified_users":"unverified_users"},
-            status = status.HTTP_200_OK,
-                )
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )        
+    
     def post(self, request):
         try:
-            verif_row = VerificationModel.objects.get(email_token=request.get("email_token"))
-        except VerificationModel.DoesNotExist:
+            verif_row = VerificationModel.objects.filter(email_token=request.data["email_token"]).first()
+            print(verif_row)
+            user = verif_row.userid
+            # user=UserAccount.objects.filter(id=userid).first()
+            user.status = "V"
+            user.save()
+            verif_row.delete()
             return Response(
-                {"error": "Invalid token!"},
+                {"success": "User verified successfully!"},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        userid = verif_row.userid
-        user=UserAccount.objects.first(id=userid)
-        user.status = "V"
-        user.save()
-        verif_row.delete()
-        return Response(
-            {"success": "User verified successfully!"},
-            status=status.HTTP_200_OK,
-        )
+        
+        

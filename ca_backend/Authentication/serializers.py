@@ -116,7 +116,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class VerificationSerializer(serializers.ModelSerializer):
     email_token=serializers.CharField(max_length=100)
-    user= LoginSerializer()
+    userid= LoginSerializer()
     class Meta:
         model=VerificationModel
-        fields=("email_token","user")
+        fields=("email_token","userid")
