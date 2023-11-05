@@ -20,6 +20,7 @@ class UserAccount(AbstractBaseUser):
     referral_code=models.CharField(max_length=100,unique=True)
     role=models.IntegerField(choices=ROLE_CHOICES, default=1)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+    email_verified = models.BooleanField(default=False)
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
 

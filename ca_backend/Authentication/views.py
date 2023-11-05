@@ -19,7 +19,7 @@ from .serializers import (
     CombinedRegisterProfileSerializer,
     
 )
-from .send_email import send_verification_email
+from .send_email import send_approved_email, send_email_cnf_email, send_email_verif_email
 import bcrypt  
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -44,6 +44,7 @@ class RegisterView(generics.GenericAPIView):
                 {"error": "User with same credentials already exists!"},
                 status=status.HTTP_226_IM_USED,
             )
+        print(str(request.data))
         request.data["referral_code"]=f'{uuid.uuid4()}_{datetime.datetime.now()}'
         raw_password = request.data.get("password")
         hashed_password = bcrypt.hashpw(raw_password.encode("utf-8"), bcrypt.gensalt())
@@ -67,7 +68,8 @@ class RegisterView(generics.GenericAPIView):
             email_token=uuid.uuid4()
             verif_row=VerificationModel(userid=user,email_token=email_token)
             verif_row.save()
-            send_verification_email(user.email, email_token)
+            # send email to the user containing a link to verify their email
+            send_email_verif_email(user.email, email_token)
             return Response(
                 {"success": "Verification link has been sent by email!"},
                 status=status.HTTP_200_OK,
@@ -121,8 +123,8 @@ class StatusCheck(generics.GenericAPIView):
                 )
    
 
-class VerifyTokenView(generics.GenericAPIView):
-    permission_classes = [IsAdminUser]
+class VerifyAccountView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated,IsAdminUser]
     def get(self,request):
         try:
             vm_obs = VerificationModel.objects.all()
@@ -140,13 +142,29 @@ class VerifyTokenView(generics.GenericAPIView):
     
     def post(self, request):
         try:
-            verif_row = VerificationModel.objects.filter(email_token=request.data["email_token"]).first()
+            verif_row = VerificationModel.objects.filter(email_token=request.data["token"]).first()
             print(verif_row)
+            if verif_row is None:
+                return Response(
+                    {"error": "Invalid token!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             user = verif_row.userid
-            # user=UserAccount.objects.filter(id=userid).first()
+            if user.email_verified == False:
+                return Response(
+                    {"error": "Email not verified! First verify email."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if user.status != "P":
+                return Response(
+                    {"error": "User already verified!"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
             user.status = "V"
-            user.save()
             verif_row.delete()
+            user.save()
+            send_approved_email(user.email)
             return Response(
                 {"success": "User verified successfully!"},
                 status=status.HTTP_200_OK,
@@ -157,4 +175,32 @@ class VerifyTokenView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
+
+
+class VerifyEmailView(generics.GenericAPIView):
+    def get(self,request,token):
+        print(token)
+        verif_row = VerificationModel.objects.filter(email_token=token).first()
         
+        print(verif_row)
+        if verif_row is None:
+            return Response(
+                {"error": "Invalid token!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = verif_row.userid
+        if user.email_verified:
+            return Response(
+                {"error": "Email already verified!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.email_verified = True
+        user.save()
+        # send_approved_email(user.email)
+        # send email informing the user that email has been verified and account will shortly be activated after a review by our team
+        send_email_cnf_email(user.email)
+        print("returning success resp")
+        return Response(
+            {"success": "Email verified successfully!"},
+            status=status.HTTP_200_OK,
+        )
