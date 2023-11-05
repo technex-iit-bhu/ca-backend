@@ -1,16 +1,16 @@
 from decouple import config
 import smtplib
-
+#todo: improve messages
 def send_email_cnf_email(rec_email):
     msg=f"Subject:Your Technex account\n\nYour email has been verified. We will contact you shortly with further procedures."
     send(rec_email,msg)
 
 def send_email_verif_email(rec_email,token):
-    msg=f"Subject:Verify your Technex account\n\nPlease click on the following link to verify your email:\n\n{config('BACKEND_URL')}/verifyemail/{token}"
+    msg=f"Subject:Verify your Technex account\n\nPlease click on the following link to verify your email:\n\n{config('BACKEND_URL')}/auth/verifyemail/{token}"
     send(rec_email,msg)
 
 def send_approved_email(rec_email):
-    msg=f"Subject:Your Technex account\n\nYour account has been approved. You can now login to your account."
+    msg=f"Subject:Your Technex account\n\nYour account has been approved. You can now login to your account. \n\n CA Portal:  {config('FRONTEND_URL')}/"
     send(rec_email,msg)
 
 def send(rec_email,msg):

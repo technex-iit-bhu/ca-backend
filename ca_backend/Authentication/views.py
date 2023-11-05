@@ -125,6 +125,7 @@ class StatusCheck(generics.GenericAPIView):
 
 class VerifyAccountView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated,IsAdminUser]
+    #todo: any authenticated user is able to access this endpoint
     def get(self,request):
         try:
             vm_obs = VerificationModel.objects.all()
