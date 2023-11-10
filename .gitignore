@@ -90,3 +90,4 @@ db.sqlite3
 venv
 static
 ca_backend/client.py
+staticfiles

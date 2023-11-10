@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import UserAccount,UserProfile
+from .models import UserAccount,UserProfile,VerificationModel
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 
@@ -114,5 +114,9 @@ class UserSerializer(serializers.ModelSerializer):
         model=UserAccount
         fields=("username","email","userprofile")
 
-class DummySerializer(serializers.Serializer):
-    pass
+class VerificationSerializer(serializers.ModelSerializer):
+    email_token=serializers.CharField(max_length=100)
+    userid= LoginSerializer()
+    class Meta:
+        model=VerificationModel
+        fields=("email_token","userid")

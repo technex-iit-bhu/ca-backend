@@ -70,7 +70,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES':(
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-        'Task.permissions.IsAdminUser'
+        'ca_backend.permissions.IsAdminUser'
     )
 }
 
@@ -180,3 +180,11 @@ SWAGGER_SETTINGS = {
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptPasswordHasher',
 ]
+
+
+EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT=587
+EMAIL_HOST_USER=config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD="balasperdidas"
+EMAIL_USE_TLS=True
