@@ -37,6 +37,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Application definition
 
 INSTALLED_APPS = [
+    #cors
+    'corsheaders',
     'Authentication',
     'Task',
     'django.contrib.admin',
@@ -56,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware', #cors
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -186,3 +189,15 @@ EMAIL_PORT=587
 EMAIL_HOST_USER=config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD="balasperdidas"
 EMAIL_USE_TLS=True
+
+
+#cors allow localhost:3000
+ALLOWED_HOSTS = ['*']
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://localhost:4200",
+]
