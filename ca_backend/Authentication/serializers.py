@@ -4,6 +4,7 @@ from .models import UserAccount,UserProfile,VerificationModel
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 
+
 def check_mobile_number(value):
     if len(value) == 10 and value.isdigit():
         return True
@@ -29,16 +30,20 @@ class RegisterSerializer(serializers.ModelSerializer):
             )
         ],
     )
-    password = serializers.CharField(write_only=True, required=True, validators=[password_validation.validate_password])
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[password_validation.validate_password],
+    )
 
     class Meta:
         model = UserAccount
         fields = "__all__"
         read_only_fields = ["id", "role"]
 
+
 def check(data):
     return authenticate(email=data["email"], password=data["password"])
-
 
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -47,7 +52,6 @@ class LoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
         fields = ("username", "password")
-
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -67,9 +71,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     why_choose = serializers.CharField(max_length=255)
     were_you_ca = serializers.BooleanField(default=False)
     points = serializers.IntegerField(default=0)
+
     class Meta:
-        model=UserProfile
-        fields="__all__"
+        model = UserProfile
+        fields = "__all__"
+
 
 class CombinedRegisterProfileSerializer(serializers.Serializer):
     username = serializers.CharField(
@@ -90,7 +96,11 @@ class CombinedRegisterProfileSerializer(serializers.Serializer):
             )
         ],
     )
-    password = serializers.CharField(write_only=True, required=True, validators=[password_validation.validate_password])
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[password_validation.validate_password],
+    )
     id = serializers.IntegerField(read_only=True)
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
@@ -107,12 +117,13 @@ class CombinedRegisterProfileSerializer(serializers.Serializer):
     points = serializers.IntegerField(default=0)
 
 
-
 class UserSerializer(serializers.ModelSerializer):
-    userprofile=ProfileSerializer()
+    userprofile = ProfileSerializer()
+
     class Meta:
-        model=UserAccount
-        fields=("username","email","userprofile")
+        model = UserAccount
+        fields = ("username", "email", "userprofile")
+
 
 class VerificationSerializer(serializers.ModelSerializer):
     email_token=serializers.CharField(max_length=100)

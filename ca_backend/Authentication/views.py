@@ -1,10 +1,13 @@
 import datetime
+import smtplib
+from decouple import config
+import random
 import uuid
 from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, serializers, status, authentication, permissions
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate, login, logout
 from drf_yasg.utils import swagger_auto_schema
 
 from ca_backend.permissions import IsAdminUser
@@ -22,6 +25,7 @@ from .serializers import (
 from .send_email import send_approved_email, send_email_cnf_email, send_email_verif_email
 import bcrypt  
 from rest_framework_simplejwt.views import TokenObtainPairView
+
 
 # Create your views here.
 class RegisterView(generics.GenericAPIView):
@@ -63,7 +67,7 @@ class RegisterView(generics.GenericAPIView):
                 return Response(
                     profile_serializer.errors, status=status.HTTP_409_CONFLICT
                 )
-            
+
             profile_serializer.save(user=user)
             email_token=uuid.uuid4()
             verif_row=VerificationModel(userid=user,email_token=email_token)
@@ -74,8 +78,7 @@ class RegisterView(generics.GenericAPIView):
                 {"success": "Verification link has been sent by email!"},
                 status=status.HTTP_200_OK,
             )
-            
-                
+
         else:
             error = {}
             for err in user_serializer.errors:
@@ -92,8 +95,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             user = UserAccount.objects.get(username=username)
         except UserAccount.DoesNotExist:
             return Response(
-                {"error": "User does not exist."},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "User does not exist."}, status=status.HTTP_400_BAD_REQUEST
             )
 
         if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
@@ -102,13 +104,14 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
         return Response(
-            {"error": "Invalid password."},
-            status=status.HTTP_400_BAD_REQUEST
+            {"error": "Invalid password."}, status=status.HTTP_400_BAD_REQUEST
         )
+
 
 class UserProfileView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class=UserSerializer
+    serializer_class = UserSerializer
+
     def get(self, request):
         user = request.user
         serializer = UserSerializer(user)

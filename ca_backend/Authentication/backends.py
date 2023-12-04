@@ -2,6 +2,7 @@ from django.contrib.auth.backends import ModelBackend
 from .models import UserAccount, UserProfile
 import bcrypt
 
+
 class AuthBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None):
         try:

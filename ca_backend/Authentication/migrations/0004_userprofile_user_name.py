@@ -4,16 +4,15 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('Authentication', '0003_remove_useraccount_college_and_more'),
+        ("Authentication", "0003_remove_useraccount_college_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='user_name',
-            field=models.CharField(default='default', max_length=100, unique=True),
+            model_name="userprofile",
+            name="user_name",
+            field=models.CharField(default="default", max_length=100, unique=True),
             preserve_default=False,
         ),
     ]
