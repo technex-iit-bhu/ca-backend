@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import UserAccount, UserProfile
+from .models import UserAccount,UserProfile,VerificationModel
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 
@@ -125,28 +125,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("username", "email", "userprofile")
 
 
-class DummySerializer(serializers.Serializer):
-    pass
-
-
-class ForgotPasswordSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-
-
-class VerifyOTPSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    otp = serializers.CharField(required=True)
-
-
-class ResetPasswordSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    password1 = serializers.CharField(
-        write_only=True,
-        required=True,
-        validators=[password_validation.validate_password],
-    )
-    password2 = serializers.CharField(
-        write_only=True,
-        required=True,
-        validators=[password_validation.validate_password],
-    )
+class VerificationSerializer(serializers.ModelSerializer):
+    email_token=serializers.CharField(max_length=100)
+    userid= LoginSerializer()
+    class Meta:
+        model=VerificationModel
+        fields=("email_token","userid")
