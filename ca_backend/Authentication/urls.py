@@ -8,8 +8,8 @@ from .views import (
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,  # To obtain a token
-    TokenRefreshView,     # To refresh an existing token
-    TokenVerifyView,      # To verify a token's validity
+    TokenRefreshView,  # To refresh an existing token
+    TokenVerifyView,  # To verify a token's validity
 )
 
 urlpatterns = [

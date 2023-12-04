@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('Authentication', '0005_useraccount_referral_code'),
+        ("Authentication", "0005_useraccount_referral_code"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='useraccount',
-            name='role',
-            field=models.IntegerField(choices=[(3, 'Admin'), (2, 'Staff'), (1, 'User')], default=1),
+            model_name="useraccount",
+            name="role",
+            field=models.IntegerField(
+                choices=[(3, "Admin"), (2, "Staff"), (1, "User")], default=1
+            ),
         ),
     ]

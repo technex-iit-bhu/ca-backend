@@ -4,16 +4,14 @@ from django.contrib.auth.models import AbstractBaseUser, Group
 # Create your models here.
 
 ROLE_CHOICES = (
-    (3, 'Admin'),
-    (2, 'Staff'),
-    (1, 'User'),
+    (3, "Admin"),
+    (2, "Staff"),
+    (1, "User"),
 )
 
-STATUS_CHOICES = (
-    ('P', 'Pending'),
-    ('V', 'Verified'),
-    ('D', 'Deleted')
-)
+STATUS_CHOICES = (("P", "Pending"), ("V", "Verified"), ("D", "Deleted"))
+
+
 class UserAccount(AbstractBaseUser):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
