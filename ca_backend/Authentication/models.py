@@ -40,7 +40,7 @@ class UserProfile(models.Model):
     points = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.user.username
+        return f"Username:{self.user.username} first_name:{self.first_name} last_name:{self.last_name}"
     
 
 class VerificationModel(models.Model):
