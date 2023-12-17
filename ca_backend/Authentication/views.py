@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth import authenticate, login, logout
 from drf_yasg.utils import swagger_auto_schema
+from django.http import HttpResponseRedirect
 
 from ca_backend.permissions import IsAdminUser
 from .models import UserAccount, VerificationModel, UserProfile
@@ -194,17 +195,11 @@ class VerifyEmailView(generics.GenericAPIView):
             )
         user = verif_row.userid
         if user.email_verified:
-            return Response(
-                {"error": "Email already verified!"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return HttpResponseRedirect(redirect_to=config("FRONTEND_URL")+"/login")
         user.email_verified = True
         user.save()
         # send_approved_email(user.email)
         # send email informing the user that email has been verified and account will shortly be activated after a review by our team
         send_email_cnf_email(user.email)
         print("returning success resp")
-        return Response(
-            {"success": "Email verified successfully!"},
-            status=status.HTTP_200_OK,
-        )
+        return HttpResponseRedirect(redirect_to=config("FRONTEND_URL")+"/login")

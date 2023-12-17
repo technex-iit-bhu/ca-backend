@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # migrations.DeleteModel(
-        #     name='UserPasswordForgotOTP',
-        # ),
+        migrations.DeleteModel(
+            name='UserPasswordForgotOTP',
+        ),
     ]
