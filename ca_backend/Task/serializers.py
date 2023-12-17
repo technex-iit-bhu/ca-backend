@@ -16,4 +16,4 @@ class TaskSerializer(serializers.ModelSerializer):
 class LeaderboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["user_name", "points"]
+        fields = ["user_name","first_name","last_name", "points"]
