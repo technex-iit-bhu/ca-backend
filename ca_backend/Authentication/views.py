@@ -4,12 +4,13 @@ from decouple import config
 import random
 import uuid
 from django.shortcuts import render, get_object_or_404
-from rest_framework import generics, serializers, status, authentication, permissions
+from rest_framework import generics, serializers, status, authentication, permissions, views
 from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth import authenticate, login, logout
 from drf_yasg.utils import swagger_auto_schema
 from django.http import HttpResponseRedirect
+
 
 from ca_backend.permissions import IsAdminUser
 from .models import UserAccount, VerificationModel, UserProfile, ForgotPasswordOTPModel
@@ -120,16 +121,25 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 
 class UserProfileView(generics.GenericAPIView):
+    """
+    Gives the detailed profile of the user
+    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
 
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "User profile fetched successfully!"}""",
+            401: """ {"error": "Authorization header not found!"}""",
+        }
+    )
     def get(self, request):
         user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
-class StatusCheck(generics.GenericAPIView):
+class StatusCheck(views.APIView):
     def get(request, user):
         return Response(
             {"message":"Working"},
@@ -137,9 +147,18 @@ class StatusCheck(generics.GenericAPIView):
                 )
    
 
-class VerifyAccountView(generics.GenericAPIView):
+class VerifyAccountView(views.APIView):
+    """
+    Verify the User Account by admin
+    """
     permission_classes = [permissions.IsAuthenticated,IsAdminUser]
     #todo: any authenticated user is able to access this endpoint
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "All verifiable users list"}""",
+            400: """{"error": "Bad Request"}""",
+        }
+    )
     def get(self,request):
         try:
             vm_obs = VerificationModel.objects.all()
@@ -155,6 +174,12 @@ class VerifyAccountView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )        
     
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "User verified successfully!"}""",
+            400: """{"error": "Bad Request"}""",
+        }
+    )
     def post(self, request):
         try:
             verif_row = VerificationModel.objects.filter(email_token=request.data["token"]).first()
@@ -192,7 +217,18 @@ class VerifyAccountView(generics.GenericAPIView):
         
 
 
-class VerifyEmailView(generics.GenericAPIView):
+class VerifyEmailView(views.APIView):
+    """
+    Verify the User Email by clicking on the link sent to the user's email
+    """
+
+
+    @swagger_auto_schema(
+        responses={
+            200: """{"success": "Email verified successfully!"}""",
+            400: """{"error": "Bad Request"}""",
+        }
+    )
     def get(self,request,token):
         print(token)
         verif_row = VerificationModel.objects.filter(email_token=token).first()
@@ -216,9 +252,19 @@ class VerifyEmailView(generics.GenericAPIView):
 
 
 class ForgotPasswordOTPCreationView(generics.GenericAPIView):
+    """
+    Creates an OTP for the user to reset their password
+    """
+
     serializer_class = ForgotPasswordSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        responses={
+            201: """{"detail": "OTP generated successfully"}""",
+            404: """{"detail": "No such user"}""",
+        }
+    )
     def post(self, request):
         email = request.data["email"]
         user = UserAccount.objects.filter(email=email).first()
@@ -240,8 +286,20 @@ class ForgotPasswordOTPCreationView(generics.GenericAPIView):
 
 
 class VerifyOTPView(generics.GenericAPIView):
+    """
+    Verifies the OTP sent to the user's email
+    """
     serializer_class = VerifyOTPSerializer
     permission_classes = [permissions.AllowAny]
+    @swagger_auto_schema(
+        responses={
+            202: """{"detail": "OTP Verified"}""",
+            403: """{"detail": "Incorrect OTP"}""",
+            408: """{"detail": "OTP Expired. Try again"}""",
+            401: """{"detail": "OTP already used"}""",
+            404: """{"detail": "No such user"}""",
+        }
+    )
     def post(self, request):
         email = request.data["email"]
         otp = request.data["otp"]
@@ -276,9 +334,22 @@ class VerifyOTPView(generics.GenericAPIView):
 
 
 class ResetPasswordAPIView(generics.GenericAPIView):
+    """
+    Resets the password of the user
+    """
+
     serializer_class = ResetPasswordSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        responses={
+            200: """{"detail": "Password Reset Successfully"}""",
+            400: """{"detail": "Passwords don't match"}""",
+            401: """{"detail": "OTP not verified or has been already used."}""",
+            404: """{"detail": "No such User"}""",
+            409: """{"detail": "Password not strong enough"}""",
+        }
+    )
     def post(self, request):
         pass1 = request.data["password1"]
         pass2 = request.data["password2"]
@@ -313,3 +384,22 @@ class ResetPasswordAPIView(generics.GenericAPIView):
             return Response(
                 {"detail": "Passwords don't match"}, status=status.HTTP_400_BAD_REQUEST)
         return Response( {"detail": "OTP not verified or has been already used."}, status=status.HTTP_401_UNAUTHORIZED)
+    
+
+class AvatarChangeView(views.APIView):
+    """
+    Changes the avatar of the user
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    @swagger_auto_schema(
+        responses={
+            200: """{"detail": "Avatar changed successfully"}""",
+        }
+    )
+    def patch(self, request, avatar_id):
+        user = request.user
+        profile = UserProfile.objects.filter(user=user).first()
+        profile.avatar_id = avatar_id
+        profile.save()
+        return Response({"detail": "Avatar changed successfully"}, status=status.HTTP_200_OK)
+    
