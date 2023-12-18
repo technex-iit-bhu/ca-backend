@@ -122,7 +122,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAccount
-        fields = ("username", "email", "userprofile")
+        fields = ("username","referral_code", "email", "userprofile")
 
 
 class VerificationSerializer(serializers.ModelSerializer):
