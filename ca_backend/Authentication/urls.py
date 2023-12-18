@@ -7,6 +7,7 @@ from .views import (
     ForgotPasswordOTPCreationView,
     VerifyOTPView,
     ResetPasswordAPIView,
+    AvatarChangeView
 )
 
 from rest_framework_simplejwt.views import (
@@ -20,9 +21,9 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('login/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path("user/profile",UserProfileView.as_view(),name="user_profile"),
+    path("user/profile/",UserProfileView.as_view(),name="user_profile"),
     path("verifyaccount/", VerifyAccountView.as_view(), name="verify_account"),
-    path("verifyemail/<str:token>", VerifyEmailView.as_view(), name="verify_email"),
+    path("verifyemail/<str:token>/", VerifyEmailView.as_view(), name="verify_email"),
     path(
         "login/forgot_password/",
         ForgotPasswordOTPCreationView.as_view(),
@@ -34,4 +35,5 @@ urlpatterns = [
         ResetPasswordAPIView.as_view(),
         name="reset_password",
     ),
+    path("user/profile/change_avatar/<int:avatar_id>/",AvatarChangeView.as_view(),name="change_avatar")
 ]
