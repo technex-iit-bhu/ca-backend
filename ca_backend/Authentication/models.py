@@ -26,6 +26,7 @@ class UserAccount(AbstractBaseUser):
 
 class UserProfile(models.Model):
     unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    avatar_id = models.IntegerField(null=False, blank=False, default=1)
     user = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
     user_name = models.CharField(max_length=100, unique=True)
     date_joined = models.DateTimeField(verbose_name="date joined", auto_now_add=True)
