@@ -48,3 +48,11 @@ class UserProfile(models.Model):
 class VerificationModel(models.Model):
     userid = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     email_token = models.CharField(max_length=100)
+
+
+class ForgotPasswordOTPModel(models.Model):
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6, unique=True, null=False)
+    has_been_used = models.BooleanField(null=False, default=False)
+    verified = models.BooleanField(null=False, default=False)
+    last_created = models.DateTimeField(auto_now=True)

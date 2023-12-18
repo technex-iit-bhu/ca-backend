@@ -12,7 +12,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.http import HttpResponseRedirect
 
 from ca_backend.permissions import IsAdminUser
-from .models import UserAccount, VerificationModel, UserProfile
+from .models import UserAccount, VerificationModel, UserProfile, ForgotPasswordOTPModel
 from .serializers import (
     ProfileSerializer,
     RegisterSerializer,
@@ -21,11 +21,14 @@ from .serializers import (
     check,
     UserSerializer,
     CombinedRegisterProfileSerializer,
-    
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer,
+    VerifyOTPSerializer    
 )
-from .send_email import send_approved_email, send_email_cnf_email, send_email_verif_email
+from .send_email import send_approved_email, send_email_cnf_email, send_email_verif_email, send_otp_email
 import bcrypt  
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth import password_validation
 
 
 # Create your views here.
@@ -52,6 +55,13 @@ class RegisterView(generics.GenericAPIView):
         print(str(request.data))
         request.data["referral_code"]=f'{uuid.uuid4()}_{datetime.datetime.now()}'
         raw_password = request.data.get("password")
+        try:
+            password_validation.validate_password(raw_password, user=UserAccount)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_409_CONFLICT,
+            )
         hashed_password = bcrypt.hashpw(raw_password.encode("utf-8"), bcrypt.gensalt())
         request.data["password"] = hashed_password.decode("utf-8")
 
@@ -203,3 +213,103 @@ class VerifyEmailView(generics.GenericAPIView):
         send_email_cnf_email(user.email)
         print("returning success resp")
         return HttpResponseRedirect(redirect_to=config("FRONTEND_URL")+"/login")
+
+
+class ForgotPasswordOTPCreationView(generics.GenericAPIView):
+    serializer_class = ForgotPasswordSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data["email"]
+        user = UserAccount.objects.filter(email=email).first()
+        if user is not None:
+            otp = "{:06}".format(random.randint(1, 999999))
+            user_otp = ForgotPasswordOTPModel.objects.filter(user=user).first()
+            if user_otp is not None:
+                user_otp.otp = otp
+                user_otp.has_been_used = False
+                user_otp.verified = False
+                user_otp.save()
+            else:
+                ForgotPasswordOTPModel.objects.create(user=user, otp=otp)
+            send_otp_email(user.email, otp)
+            return Response(
+                {"detail": "OTP generated successfully"}, status=status.HTTP_201_CREATED
+            )
+        return Response({"detail": "No such user"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class VerifyOTPView(generics.GenericAPIView):
+    serializer_class = VerifyOTPSerializer
+    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        email = request.data["email"]
+        otp = request.data["otp"]
+
+        user = UserAccount.objects.filter(email=email).first()
+        if user is not None:
+            user_otp = ForgotPasswordOTPModel.objects.filter(user=user, otp=otp).first()
+            if not user_otp.has_been_used:
+                if (
+                    datetime.datetime.now(datetime.timezone.utc) - user_otp.last_created
+                ).seconds > 600:
+                    user_otp.delete()
+                    return Response(
+                        {"detail": "OTP Expired. Try again"},
+                        status=status.HTTP_408_REQUEST_TIMEOUT,
+                    )
+                if user_otp is not None:
+                    user_otp.verified = True
+                    user_otp.save()
+                    return Response(
+                        {"detail": "OTP Verified"}, status=status.HTTP_202_ACCEPTED
+                    )
+                else:
+                    return Response(
+                        {"detail": "Incorrect OTP"}, status=status.HTTP_403_FORBIDDEN
+                    )
+            else:
+                return Response(
+                    {"detail": "OTP already used"}, status=status.HTTP_401_UNAUTHORIZED
+                )
+        return Response({"detail": "No such user"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ResetPasswordAPIView(generics.GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        pass1 = request.data["password1"]
+        pass2 = request.data["password2"]
+        email = request.data["email"]
+        user = UserAccount.objects.filter(email=email).first()
+        user_otp = ForgotPasswordOTPModel.objects.filter(user=user).first()
+        if user_otp.verified and not user_otp.has_been_used:
+            if pass1 == pass2:
+                raw_password = pass1
+                try:
+                    password_validation.validate_password(raw_password)
+                except Exception as e:
+                    return Response(
+                        {"error": str(e)},
+                        status=status.HTTP_409_CONFLICT,
+                    )
+                hashed_password = bcrypt.hashpw(
+                    raw_password.encode("utf-8"), bcrypt.gensalt()
+                )
+                if user is not None:
+                    user.password = hashed_password.decode("utf-8")
+                    user.save()
+                    user_otp.has_been_used = True
+                    user_otp.save()
+                    return Response(
+                        {"detail": "Password Reset Successfully"},
+                        status=status.HTTP_200_OK,
+                    )
+                return Response(
+                    {"detail": "No such User"}, status=status.HTTP_404_NOT_FOUND
+                )
+            return Response(
+                {"detail": "Passwords don't match"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response( {"detail": "OTP not verified or has been already used."}, status=status.HTTP_401_UNAUTHORIZED)

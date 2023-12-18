@@ -13,6 +13,10 @@ def send_approved_email(rec_email):
     msg=f"Subject:Your Technex account\n\nYour account has been approved. You can now login to your account. \n\n CA Portal:  {config('FRONTEND_URL')}/"
     send(rec_email,msg)
 
+def send_otp_email(rec_email,otp):
+    msg=f"Subject:OTP for password reset\n\nYour OTP for resetting your password is {otp}.\n If you did not request this, ignore this mail and do not share your OTP."
+    send(rec_email,msg)
+
 def send(rec_email,msg):
     """
     Function to send verification email to the user 
