@@ -129,11 +129,13 @@ class UserProfileView(generics.GenericAPIView):
 
     @swagger_auto_schema(
         responses={
-            200: """{"success": "User profile fetched successfully!"}""",
             401: """ {"error": "Authorization header not found!"}""",
-        }
+        },        
     )
     def get(self, request):
+        """
+        Retrieve the user profile.
+        """
         user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -144,7 +146,7 @@ class StatusCheck(views.APIView):
         return Response(
             {"message":"Working"},
             status = status.HTTP_200_OK,
-                )
+        )
    
 
 class VerifyAccountView(views.APIView):
