@@ -123,3 +123,24 @@ class SubmittedUserTasksListAPIView(generics.GenericAPIView):
         except Exception as e:
             return Response({"status": "No Task Submission Found"}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer_data, status=status.HTTP_200_OK)
+    
+
+class UserSubmittedTasksListAPIView(generics.GenericAPIView):
+    """
+    View for getting list of all Tasks submitted by a particular user.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TaskSubmissionSerializer
+    queryset = TaskSubmission.objects.all()
+
+    def get(self, request):
+        user_id = request.user
+        user_id = UserProfile.objects.filter(user=user_id).first()
+        task_submissions = TaskSubmission.objects.filter(user=user_id)
+        serializer = TaskSubmissionSerializer(task_submissions, many=True)
+        try:
+            serializer_data = serializer.data
+        except Exception as e:
+            return Response({"status": "No Task Submission Found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer_data, status=status.HTTP_200_OK)
