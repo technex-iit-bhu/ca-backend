@@ -99,6 +99,9 @@ class RegisterView(generics.GenericAPIView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Custom TokenObtainPairView to return access token
+    """
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -106,12 +109,26 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         try:
             user = UserAccount.objects.get(username=username)
         except UserAccount.DoesNotExist:
+            try:
+                user = UserAccount.objects.get(email=username)
+            except UserAccount.DoesNotExist:
+                return Response(
+                    {"error": "User does not exist."}, status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        if user.status == "P":
             return Response(
-                {"error": "User does not exist."}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "User not verified by admin yet."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if user.email_verified == False:
+            return Response(
+                {"error": "Email not verified! First verify email."}, status=status.HTTP_400_BAD_REQUEST
             )
 
         if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
-            serializer = self.get_serializer(data=request.data)
+            data = {"username": user.username, "password": password}
+            serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
