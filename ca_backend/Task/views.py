@@ -71,7 +71,12 @@ class SubmitTaskAPIView(views.APIView):
 
     permission_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(manual_parameters=[openapi.Parameter('link', openapi.IN_QUERY, description="Link to the Task Submission", type=openapi.TYPE_STRING)])
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'link': openapi.Schema(type=openapi.TYPE_STRING, description='Link to the Task Submission')
+        }
+    ))
     def post(self, request, task_id, *args, **kwargs):
         user_id = request.user
         task = Task.objects.filter(id=task_id).first()
@@ -97,7 +102,12 @@ class SubmitTaskAPIView(views.APIView):
         task_submission.save()
         return Response({"status": "Task Submitted"}, status=status.HTTP_200_OK)
     
-    @swagger_auto_schema(manual_parameters=[openapi.Parameter('link', openapi.IN_QUERY, description="Link to the Task Submission", type=openapi.TYPE_STRING)])
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'link': openapi.Schema(type=openapi.TYPE_STRING, description='Link to the Task Submission')
+        }
+    ))
     def patch(self, request, task_id, *args, **kwargs):
         """
         View for Updating the Task Submission. Can only be accessed by the User who submitted the Task.
@@ -109,6 +119,7 @@ class SubmitTaskAPIView(views.APIView):
         try:
             validate(request.data["link"])
         except Exception as e:
+            print(e)
             return Response({"status": "Invalid Link"}, status=status.HTTP_400_BAD_REQUEST)
         user_id = request.user
         task = Task.objects.filter(id=task_id).first()
@@ -122,7 +133,12 @@ class SubmitTaskAPIView(views.APIView):
 class AdminVerifyTaskSubmissionAPIView(views.APIView):
     permission_classes = [IsStaffUser]
 
-    @swagger_auto_schema(manual_parameters=[openapi.Parameter('admin_comment', openapi.IN_QUERY, description="Admin Comment", type=openapi.TYPE_STRING)])
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'admin_comment': openapi.Schema(type=openapi.TYPE_STRING, description='Admin Comment')
+        }
+    ))
     def post(self, request, task_submission_id, *args, **kwargs):
         """
         View for Admin to verify the Task Submission. Can only be accessed by Admin/Staff User. This will verify the task submission and add the points to the user's profile.
@@ -145,7 +161,12 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
         task_submission.save()
         return Response({"status": "Task Submission Verified"}, status=status.HTTP_200_OK)
     
-    @swagger_auto_schema(manual_parameters=[openapi.Parameter('admin_comment', openapi.IN_QUERY, description="Admin Comment", type=openapi.TYPE_STRING)])
+    @swagger_auto_schema(request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'admin_comment': openapi.Schema(type=openapi.TYPE_STRING, description='Admin Comment')
+        }
+    ))
     def patch(self, request, task_submission_id, *args, **kwargs):
         """
         View for Admin to comment on the Task Submission. Can only be accessed by Admin/Staff User. Use this if not verifying the task submission.
