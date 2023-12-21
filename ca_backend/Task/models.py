@@ -1,5 +1,5 @@
 from django.db import models
-
+import datetime
 # Create your models here.
 
 
@@ -12,7 +12,10 @@ class Task(models.Model):
     title = models.CharField(max_length=255, null=False, blank=False)
     description = models.TextField(blank=True, null=False)
     points = models.IntegerField(null=False, default=0)
-    deadline = models.DateTimeField(null=False, blank=False, default="2024-01-01 00:00:00", editable=True)
+    deadline = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now()+datetime.timedelta(days=7), help_text="Deadline for the Task", editable=True)
+
+    def __str__(self):
+        return self.title
 
 
 class TaskSubmission(models.Model):
@@ -24,4 +27,9 @@ class TaskSubmission(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     user = models.ForeignKey("Authentication.UserProfile", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
+    link = models.URLField(blank=True, null=True)
     verified = models.BooleanField(default=False)
+    admin_comment = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.task.title + " - " + self.user.user_name

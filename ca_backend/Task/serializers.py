@@ -30,4 +30,4 @@ class TaskSubmissionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = TaskSubmission
-        fields = ("id","verified","timestamp", "user", "task")
+        fields = ("id","verified","timestamp", "user", "task", "link", "admin_comment")
