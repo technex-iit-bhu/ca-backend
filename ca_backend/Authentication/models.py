@@ -23,6 +23,24 @@ class UserAccount(AbstractBaseUser):
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
 
+    @property
+    def is_staff(self):
+        return self.role >= 2
+    
+    @property
+    def is_admin(self):
+        return self.role == 3
+    
+    @property
+    def is_superuser(self):
+        return self.role == 3
+    
+    def has_perm(self, perm, obj=None):
+        return self.role == 3
+    
+    def has_module_perms(self, app_label):
+        return self.role == 3
+
 
 class UserProfile(models.Model):
     unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
@@ -50,6 +68,9 @@ class VerificationModel(models.Model):
     userid = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
     email_token = models.CharField(max_length=100)
 
+    def __str__(self):
+        return f"Username:{self.userid.username} email_token:{self.email_token}"
+
 
 class ForgotPasswordOTPModel(models.Model):
     user = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
@@ -57,3 +78,6 @@ class ForgotPasswordOTPModel(models.Model):
     has_been_used = models.BooleanField(null=False, default=False)
     verified = models.BooleanField(null=False, default=False)
     last_created = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Username:{self.user.username} otp:{self.otp}"
