@@ -4,7 +4,8 @@ from .views import (TaskListCreateAPIView,
                        TaskLeaderboardView,
                        SubmitTaskAPIView,
                        AdminVerifyTaskSubmissionAPIView,
-                       SubmittedUserTasksListAPIView)
+                       SubmittedUserTasksListAPIView,
+                       UserSubmittedTasksListAPIView)
 
 
 urlpatterns = [
@@ -14,4 +15,5 @@ urlpatterns = [
     path("submit/<int:task_id>/", SubmitTaskAPIView.as_view(), name="submit_task"),
     path("verify/<int:task_submission_id>/", AdminVerifyTaskSubmissionAPIView.as_view(), name="verify_task_submission"),
     path("verify/", SubmittedUserTasksListAPIView.as_view(), name="verify_task_submission"),
+    path("submitted/", UserSubmittedTasksListAPIView.as_view(), name="verify_task_submission"),
 ]
