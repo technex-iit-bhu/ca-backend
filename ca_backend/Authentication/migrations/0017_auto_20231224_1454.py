@@ -35,5 +35,6 @@ class Migration(migrations.Migration):
                 ('referral_code', models.CharField(max_length=50, null=True, unique=True)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
-        )
+        ),
+        migrations.RunPython(populate_referral_codes),
     ]
