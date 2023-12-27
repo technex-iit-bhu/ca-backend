@@ -13,7 +13,7 @@ from django.http import HttpResponseRedirect
 
 
 from ca_backend.permissions import IsAdminUser
-from .models import UserAccount, VerificationModel, UserProfile, ForgotPasswordOTPModel
+from .models import UserAccount, VerificationModel, UserProfile, ForgotPasswordOTPModel, ReferralCode
 from .serializers import (
     ProfileSerializer,
     RegisterSerializer,
@@ -84,6 +84,8 @@ class RegisterView(generics.GenericAPIView):
             email_token=uuid.uuid4()
             verif_row=VerificationModel(userid=user,email_token=email_token)
             verif_row.save()
+            referral_code = ReferralCode(user=user, referral_code=f"technex24_{user.username}_{profile_serializer.data['first_name']}_{profile_serializer.data['last_name']}")
+            referral_code.save()
             # send email to the user containing a link to verify their email
             send_email_verif_email(user.email, email_token)
             return Response(
@@ -155,7 +157,10 @@ class UserProfileView(generics.GenericAPIView):
         """
         user = request.user
         serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        referral_code = ReferralCode.objects.filter(user=user).first()
+        data = serializer.data
+        data["referral_code"] = referral_code.referral_code
+        return Response(data, status=status.HTTP_200_OK)
     
 
 class StatusCheck(views.APIView):
