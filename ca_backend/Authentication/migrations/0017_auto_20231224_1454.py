@@ -16,8 +16,9 @@ class Migration(migrations.Migration):
         UserAccount = apps.get_model('Authentication', 'UserAccount')
         UserProfile = apps.get_model('Authentication', 'UserProfile')
         for user in UserAccount.objects.all():
-            profile = UserProfile.objects.get(user=user)
-            ReferralCode.objects.create(user=user, referral_code=f"technex24_{user.username}_{profile.first_name}_{profile.last_name}")
+             profile = UserProfile.objects.filter(user=user).first()
+             if profile:
+              ReferralCode.objects.create(user=user, referral_code=f"technex24_{user.username}_{profile.first_name}_{profile.last_name}")
 
     operations = [
         migrations.RemoveField(
