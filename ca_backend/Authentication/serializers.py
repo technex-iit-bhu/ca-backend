@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import UserAccount,UserProfile,VerificationModel
+from .models import UserAccount,UserProfile,VerificationModel, ReferralCode
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 
@@ -119,10 +119,10 @@ class CombinedRegisterProfileSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     userprofile = ProfileSerializer()
-
+    
     class Meta:
         model = UserAccount
-        fields = ("username","referral_code", "email", "userprofile")
+        fields = ("username", "email", "userprofile")
 
 
 class VerificationSerializer(serializers.ModelSerializer):
