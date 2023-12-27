@@ -16,7 +16,6 @@ STATUS_CHOICES = (("P", "Pending"), ("V", "Verified"), ("D", "Deleted"))
 class UserAccount(AbstractBaseUser):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
-    referral_code=models.CharField(max_length=100,unique=True)
     role=models.IntegerField(choices=ROLE_CHOICES, default=1)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
     email_verified = models.BooleanField(default=False)
@@ -40,10 +39,12 @@ class UserAccount(AbstractBaseUser):
     
     def has_module_perms(self, app_label):
         return self.role == 3
+    
+    def __str__(self):
+        return f"{self.username} - {self.status}"
 
 
 class UserProfile(models.Model):
-    unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
     avatar_id = models.IntegerField(null=False, blank=False, default=1)
     user = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
     user_name = models.CharField(max_length=100, unique=True)
@@ -61,8 +62,7 @@ class UserProfile(models.Model):
     points = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"Username:{self.user.username} first_name:{self.first_name} last_name:{self.last_name}"
-    
+        return f"{self.user_name} - {self.first_name} - {self.last_name} - {self.college}"
 
 class VerificationModel(models.Model):
     userid = models.ForeignKey(UserAccount, on_delete=models.CASCADE)
@@ -81,3 +81,11 @@ class ForgotPasswordOTPModel(models.Model):
 
     def __str__(self):
         return f"Username:{self.user.username} otp:{self.otp}"
+    
+
+class ReferralCode(models.Model):
+    user = models.OneToOneField(UserAccount, on_delete=models.CASCADE)
+    referral_code = models.CharField(max_length=50, null=True, unique=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.referral_code}"
