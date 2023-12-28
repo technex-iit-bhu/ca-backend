@@ -5,10 +5,10 @@ from .models import Task, TaskSubmission
 
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'points', 'deadline')
+    list_display = ('title', 'description', 'points', 'deadline', 'image')
     list_filter = ('deadline',)
     search_fields = ('title', 'description', 'points', 'deadline')
-    list_editable = ('title', 'description', 'points', 'deadline')
+    list_editable = ('title', 'description', 'points', 'deadline', 'image')
     list_display_links = None
     
     model = Task
