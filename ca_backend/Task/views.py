@@ -44,6 +44,7 @@ class TaskManipulateAPIView(
     lookup_field = "pk"
     serializer_class = TaskSerializer
     permission_classes = [IsStaffUser]
+    parser_classes = [parsers.MultiPartParser]
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
