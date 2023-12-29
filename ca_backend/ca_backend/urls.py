@@ -8,6 +8,7 @@ from drf_yasg import openapi
 from drf_yasg.generators import OpenAPISchemaGenerator
 from rest_framework import permissions
 from Authentication.views import StatusCheck
+from django.views.static import serve
 
 
 class SchemaGenerator(OpenAPISchemaGenerator):
@@ -37,6 +38,7 @@ urlpatterns = [
     path("auth/", include("Authentication.urls")),
     path("tasks/", include("Task.urls")),
     path("status/", StatusCheck.as_view(), name="status"),
+    path('media/<path:path>/', serve, {'document_root': settings.MEDIA_ROOT}),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += [
