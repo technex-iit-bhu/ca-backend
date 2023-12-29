@@ -9,6 +9,7 @@ from ca_backend.permissions import IsAdminUser, IsStaffUser
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework import parsers
 
 # import Url validator
 from django.core.validators import URLValidator
@@ -25,6 +26,8 @@ class TaskListCreateAPIView(generics.ListCreateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsStaffUser]
+    parser_classes = [parsers.MultiPartParser]
+
 
 
 class TaskManipulateAPIView(
@@ -41,6 +44,7 @@ class TaskManipulateAPIView(
     lookup_field = "pk"
     serializer_class = TaskSerializer
     permission_classes = [IsStaffUser]
+    parser_classes = [parsers.MultiPartParser]
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
