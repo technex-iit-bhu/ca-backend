@@ -12,3 +12,4 @@ class Task(models.Model):
     title = models.CharField(max_length=255, null=False, blank=False)
     description = models.TextField(blank=True, null=False)
     points = models.IntegerField(null=False, default=0)
+    incentives = models.TextField(blank=True, default='no incentive🤡')
