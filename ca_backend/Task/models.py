@@ -17,12 +17,9 @@ class Task(models.Model):
     Stores Title, Description and the Points worth of the Task
     """
 
-
-    title = models.CharField(max_length=255, null=False, blank=False)
-    description = models.TextField(blank=True, null=False)
-    points = models.IntegerField(null=False, default=0)
-    incentives = models.TextField(blank=True, default='no incentive🤡')
-
+    title = models.CharField(max_length=255, null=False, blank=False, help_text="Title for the Task")
+    description = models.TextField(blank=True, null=False, help_text="Description for the Task")
+    points = models.IntegerField(null=False, default=0, help_text="Points for the Task")
     deadline = models.DateTimeField(null=False, blank=False, default=datetime.datetime(2023, 12, 28, 22, 23, 18, 757893), help_text="Deadline for the Task", editable=True)
     image = models.ImageField(upload_to=upload_to, null=True, blank=True, help_text="Image for the Task")
 
