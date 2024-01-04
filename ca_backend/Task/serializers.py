@@ -26,7 +26,6 @@ class TaskSubmissionSerializer(serializers.ModelSerializer):
     """
 
     task = TaskSerializer(read_only=True)
-    user = ProfileSerializer(read_only=True)
     
     class Meta:
         model = TaskSubmission
