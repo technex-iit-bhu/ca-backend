@@ -10,6 +10,7 @@ from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework import parsers
+from Authentication.serializers import ProfileSerializer
 
 # import Url validator
 from django.core.validators import URLValidator
@@ -200,8 +201,17 @@ class SubmittedUserTasksListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsAdminUser]
     serializer_class = TaskSubmissionSerializer
     
-    def get_queryset(self):
-        return TaskSubmission.objects.filter(verified=False)
+    def get(self, request, *args, **kwargs):
+        # add list of all users to the response
+        users = UserProfile.objects.all()
+        usernames = users.values_list("user_name", flat=True)
+        submissions = TaskSubmission.objects.all()
+        submissions_serializer = TaskSubmissionSerializer(submissions, many=True)
+        response = {
+            "users": usernames,
+            "submissions": submissions_serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
 
     
     
