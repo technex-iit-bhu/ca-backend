@@ -206,7 +206,7 @@ class SubmittedUserTasksListAPIView(generics.ListAPIView):
         users = UserProfile.objects.all()
         usernames = users.values_list("user_name", flat=True)
         submissions = TaskSubmission.objects.all()
-        response = {}
+        response = []
         for user in usernames:
             user_submissions = submissions.filter(user__user_name=user)
             user_submissions_serializer = TaskSubmissionSerializer(user_submissions, many=True)
@@ -216,7 +216,9 @@ class SubmittedUserTasksListAPIView(generics.ListAPIView):
                     submission['image'] = request.build_absolute_uri(submission['image'])
                 if submission['task']['image'] and not submission['task']['image'].startswith('http'):
                     submission['task']['image'] = request.build_absolute_uri(submission['task']['image'])
-            response[user] = user_submissions_serializer.data
+            response.append({"user": user,
+                              "submissions": user_submissions_serializer.data})
+       
         return Response(response, status=status.HTTP_200_OK)
 
     
