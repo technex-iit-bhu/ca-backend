@@ -53,7 +53,6 @@ class RegisterView(generics.GenericAPIView):
                 {"error": "User with same credentials already exists!"},
                 status=status.HTTP_226_IM_USED,
             )
-        print(str(request.data))
         request.data["referral_code"]=f'{uuid.uuid4()}_{datetime.datetime.now()}'
         raw_password = request.data.get("password")
         try:
@@ -159,6 +158,7 @@ class UserProfileView(generics.GenericAPIView):
         serializer = UserSerializer(user)
         referral_code = ReferralCode.objects.filter(user=user).first()
         data = serializer.data
+        data['rank'] = UserProfile.objects.filter(points__gt=user.userprofile.points).count() + 1
         data["referral_code"] = referral_code.referral_code
         return Response(data, status=status.HTTP_200_OK)
     
