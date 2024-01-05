@@ -195,7 +195,7 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
 
 class SubmittedUserTasksListAPIView(generics.ListAPIView):
     """
-    View for getting list of all unverified Tasks submitted by all users. Can only be accessed by Admin/Staff User.
+    View for getting list of all Tasks submitted by all users. Can only be accessed by Admin/Staff User.
     """
 
     permission_classes = [permissions.IsAuthenticated, IsAdminUser]
@@ -206,11 +206,19 @@ class SubmittedUserTasksListAPIView(generics.ListAPIView):
         users = UserProfile.objects.all()
         usernames = users.values_list("user_name", flat=True)
         submissions = TaskSubmission.objects.all()
-        submissions_serializer = TaskSubmissionSerializer(submissions, many=True)
-        response = {
-            "users": usernames,
-            "submissions": submissions_serializer.data
-        }
+        response = []
+        for user in usernames:
+            user_submissions = submissions.filter(user__user_name=user)
+            user_submissions_serializer = TaskSubmissionSerializer(user_submissions, many=True)
+            # Fix: Check if the link is a relative URL and prepend the base URL if necessary
+            for submission in user_submissions_serializer.data:
+                if submission['image'] and not submission['image'].startswith('http'):
+                    submission['image'] = request.build_absolute_uri(submission['image'])
+                if submission['task']['image'] and not submission['task']['image'].startswith('http'):
+                    submission['task']['image'] = request.build_absolute_uri(submission['task']['image'])
+            response.append({"user": user,
+                              "submissions": user_submissions_serializer.data})
+       
         return Response(response, status=status.HTTP_200_OK)
 
     

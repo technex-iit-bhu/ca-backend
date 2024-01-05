@@ -83,7 +83,7 @@ class RegisterView(generics.GenericAPIView):
             email_token=uuid.uuid4()
             verif_row=VerificationModel(userid=user,email_token=email_token)
             verif_row.save()
-            referral_code = ReferralCode(user=user, referral_code=f"technex24_{user.username}_{profile_serializer.data['first_name']}_{profile_serializer.data['last_name']}")
+            referral_code = ReferralCode(user=user, referral_code=f"tnx24_{user.username}")
             referral_code.save()
             # send email to the user containing a link to verify their email
             send_email_verif_email(user.email, email_token)
