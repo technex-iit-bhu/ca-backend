@@ -15,7 +15,7 @@ class TaskAdmin(admin.ModelAdmin):
 
 
 class TaskSubmissionAdmin(admin.ModelAdmin):
-    list_display = ('task', 'user', 'timestamp', 'link', 'verified', 'admin_comment')
+    list_display = ('task', 'user', 'timestamp', 'link', 'verified', 'admin_comment', 'image')
     list_filter = ('verified',)
     search_fields = ('task', 'user', 'timestamp', 'link', 'verified', 'admin_comment')
     list_editable = ('verified', 'admin_comment')
