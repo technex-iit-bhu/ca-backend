@@ -10,6 +10,7 @@ from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework import parsers
+from Authentication.serializers import ProfileSerializer
 
 # import Url validator
 from django.core.validators import URLValidator
@@ -194,14 +195,31 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
 
 class SubmittedUserTasksListAPIView(generics.ListAPIView):
     """
-    View for getting list of all unverified Tasks submitted by all users. Can only be accessed by Admin/Staff User.
+    View for getting list of all Tasks submitted by all users. Can only be accessed by Admin/Staff User.
     """
 
     permission_classes = [permissions.IsAuthenticated, IsAdminUser]
     serializer_class = TaskSubmissionSerializer
     
-    def get_queryset(self):
-        return TaskSubmission.objects.filter(verified=False)
+    def get(self, request, *args, **kwargs):
+        # add list of all users to the response
+        users = UserProfile.objects.all()
+        usernames = users.values_list("user_name", flat=True)
+        submissions = TaskSubmission.objects.all()
+        response = []
+        for user in usernames:
+            user_submissions = submissions.filter(user__user_name=user)
+            user_submissions_serializer = TaskSubmissionSerializer(user_submissions, many=True)
+            # Fix: Check if the link is a relative URL and prepend the base URL if necessary
+            for submission in user_submissions_serializer.data:
+                if submission['image'] and not submission['image'].startswith('http'):
+                    submission['image'] = request.build_absolute_uri(submission['image'])
+                if submission['task']['image'] and not submission['task']['image'].startswith('http'):
+                    submission['task']['image'] = request.build_absolute_uri(submission['task']['image'])
+            response.append({"user": user,
+                              "submissions": user_submissions_serializer.data})
+       
+        return Response(response, status=status.HTTP_200_OK)
 
     
     

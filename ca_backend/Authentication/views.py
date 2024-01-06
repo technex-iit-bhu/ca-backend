@@ -53,7 +53,6 @@ class RegisterView(generics.GenericAPIView):
                 {"error": "User with same credentials already exists!"},
                 status=status.HTTP_226_IM_USED,
             )
-        print(str(request.data))
         request.data["referral_code"]=f'{uuid.uuid4()}_{datetime.datetime.now()}'
         raw_password = request.data.get("password")
         try:
@@ -84,7 +83,7 @@ class RegisterView(generics.GenericAPIView):
             email_token=uuid.uuid4()
             verif_row=VerificationModel(userid=user,email_token=email_token)
             verif_row.save()
-            referral_code = ReferralCode(user=user, referral_code=f"technex24_{user.username}_{profile_serializer.data['first_name']}_{profile_serializer.data['last_name']}")
+            referral_code = ReferralCode(user=user, referral_code=f"tnx24_{user.username}")
             referral_code.save()
             # send email to the user containing a link to verify their email
             send_email_verif_email(user.email, email_token)
@@ -159,6 +158,7 @@ class UserProfileView(generics.GenericAPIView):
         serializer = UserSerializer(user)
         referral_code = ReferralCode.objects.filter(user=user).first()
         data = serializer.data
+        data['rank'] = UserProfile.objects.filter(points__gt=user.userprofile.points).count() + 1
         data["referral_code"] = referral_code.referral_code
         return Response(data, status=status.HTTP_200_OK)
     
