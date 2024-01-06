@@ -2,21 +2,20 @@
 
 from django.db import migrations
 
+def populate_referral_codes(apps, schema_editor):
+    UserAccount = apps.get_model('Authentication', 'UserAccount')
+    ReferralCode = apps.get_model('Authentication', 'ReferralCode')
+    for user in UserAccount.objects.all():
+        rc, created = ReferralCode.objects.get_or_create(user=user)
+        if rc:
+            rc.referral_code = f"tnx24_{user.username}"
+            rc.save()
 
 class Migration(migrations.Migration):
 
     dependencies = [
         ('Authentication', '0017_auto_20231224_1454'),
     ]
-
-    def populate_referral_codes(apps, schema_editor):
-        UserAccount = apps.get_model('Authentication', 'UserAccount')
-        ReferralCode = apps.get_model('Authentication', 'ReferralCode')
-        for user in UserAccount.objects.all():
-            rc = ReferralCode.objects.filter(user=user).first()
-            rc.referral_code = f"tnx24_{user.username}"
-            rc.save()
-            
 
     operations = [
         migrations.RunPython(populate_referral_codes),
