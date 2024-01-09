@@ -95,10 +95,15 @@ class SubmitTaskAPIView(views.APIView):
         validate = URLValidator()
         try:
             link = request.data["link"]
-            validate(link)
+            if link == "":
+                link = None
+                pass
+            else:
+                validate(link)
         except KeyError:
             link = None
         except Exception as e:
+            print(e)
             return Response({"status": "Invalid Link"}, status=status.HTTP_400_BAD_REQUEST)
 
         image = request.data.get("image", None)    
