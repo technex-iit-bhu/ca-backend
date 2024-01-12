@@ -95,10 +95,15 @@ class SubmitTaskAPIView(views.APIView):
         validate = URLValidator()
         try:
             link = request.data["link"]
-            validate(link)
+            if link == "":
+                link = None
+                pass
+            else:
+                validate(link)
         except KeyError:
             link = None
         except Exception as e:
+            print(e)
             return Response({"status": "Invalid Link"}, status=status.HTTP_400_BAD_REQUEST)
 
         image = request.data.get("image", None)    
@@ -158,19 +163,22 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
         
         if not TaskSubmission.objects.filter(id=task_submission_id).exists():
             return Response({"status": "Task Submission Does Not Exist"}, status=status.HTTP_404_NOT_FOUND)
-        if TaskSubmission.objects.get(id=task_submission_id).verified:
+        task_submission = TaskSubmission.objects.select_related('user', 'task').get(id=task_submission_id)
+        if task_submission.verified:
             return Response({"status": "Task Submission Already Verified"}, status=status.HTTP_400_BAD_REQUEST)
-        task_submission = TaskSubmission.objects.get(id=task_submission_id)
+        
         user = task_submission.user
         task = task_submission.task
         user.points += task.points
         user.save()
+        
         task_submission.verified = True
         try:
             task_submission.admin_comment = request.data["admin_comment"]
         except KeyError:
             pass
         task_submission.save()
+        
         return Response({"status": "Task Submission Verified"}, status=status.HTTP_200_OK)
     
     @swagger_auto_schema(request_body=openapi.Schema(
@@ -203,20 +211,18 @@ class SubmittedUserTasksListAPIView(generics.ListAPIView):
     
     def get(self, request, *args, **kwargs):
         # add list of all users to the response
-        users = UserProfile.objects.all()
-        usernames = users.values_list("user_name", flat=True)
-        submissions = TaskSubmission.objects.all()
+        users = UserProfile.objects.all().select_related('user').prefetch_related('tasksubmission_set', 'tasksubmission_set__task')
         response = []
-        for user in usernames:
-            user_submissions = submissions.filter(user__user_name=user)
-            user_submissions_serializer = TaskSubmissionSerializer(user_submissions, many=True)
+        for user in users:
+            user_submissions_serializer = TaskSubmissionSerializer(user.tasksubmission_set.all(), many=True)
             # Fix: Check if the link is a relative URL and prepend the base URL if necessary
             for submission in user_submissions_serializer.data:
                 if submission['image'] and not submission['image'].startswith('http'):
                     submission['image'] = request.build_absolute_uri(submission['image'])
                 if submission['task']['image'] and not submission['task']['image'].startswith('http'):
                     submission['task']['image'] = request.build_absolute_uri(submission['task']['image'])
-            response.append({"user": user,
+            response.append({"user": user.user_name,
+                             "email": user.user.email,
                               "submissions": user_submissions_serializer.data})
        
         return Response(response, status=status.HTTP_200_OK)

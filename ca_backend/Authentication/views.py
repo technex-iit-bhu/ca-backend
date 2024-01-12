@@ -30,6 +30,7 @@ from .send_email import send_approved_email, send_email_cnf_email, send_email_ve
 import bcrypt  
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import password_validation
+from django.db.models import Q
 
 
 # Create your views here.
@@ -108,21 +109,18 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         password = request.data.get("password")
 
         try:
-            user = UserAccount.objects.get(username=username)
+            user = UserAccount.objects.get(Q(username=username) | Q(email=username))
         except UserAccount.DoesNotExist:
-            try:
-                user = UserAccount.objects.get(email=username)
-            except UserAccount.DoesNotExist:
-                return Response(
-                    {"error": "User does not exist."}, status=status.HTTP_400_BAD_REQUEST
-                )
+            return Response(
+                {"error": "User does not exist."}, status=status.HTTP_400_BAD_REQUEST
+            )
         
         if user.status == "P":
             return Response(
                 {"error": "User not verified by admin yet."}, status=status.HTTP_400_BAD_REQUEST
             )
         
-        if user.email_verified == False:
+        if not user.email_verified:
             return Response(
                 {"error": "Email not verified! First verify email."}, status=status.HTTP_400_BAD_REQUEST
             )
@@ -183,14 +181,15 @@ class VerifyAccountView(views.APIView):
             400: """{"error": "Bad Request"}""",
         }
     )
-    def get(self,request):
+    def get(self, request):
         try:
-            vm_obs = VerificationModel.objects.all()
+            vm_obs = VerificationModel.objects.select_related("userid").all()
             profiles = UserProfile.objects.filter(user__in=[vm_ob.userid for vm_ob in vm_obs])
             serializer = ProfileSerializer(profiles, many=True)
             tokens=[vm_ob.email_token for vm_ob in vm_obs]
             for i,token in enumerate(tokens):
                 serializer.data[i]["email_token"]=token
+                serializer.data[i]['is_verified'] = vm_obs[i].userid.email_verified
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(
