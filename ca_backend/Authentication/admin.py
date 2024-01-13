@@ -4,6 +4,12 @@ from django.contrib import admin
 from .models import UserAccount, UserProfile, VerificationModel, ForgotPasswordOTPModel, ReferralCode
 from .send_email import send_approved_email
 
+from decouple import config
+import smtplib
+
+connection = smtplib.SMTP("smtp.gmail.com", 587)
+connection.starttls()
+connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
 
 class UserAccountAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'role', 'status')
@@ -16,7 +22,7 @@ class UserAccountAdmin(admin.ModelAdmin):
     def make_verified(self, request, queryset):
         for user in queryset:
             if user.status == "P":
-                send_approved_email(user.email)
+                send_approved_email(user.email, user.username, connection)
         queryset.update(status="V")
 
 
@@ -31,9 +37,9 @@ class UserAccountAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=emails.csv'
         writer = csv.writer(response)
-        writer.writerow(["Email"])
+        writer.writerow(["Username", "Email"])
         for user in queryset:
-            writer.writerow([user.email])
+            writer.writerow([user.username, user.email])
         return response
     
     @admin.action(description='Delete Admin Logs')
@@ -61,9 +67,9 @@ class UserProfileAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=whatsapp_no.csv'
         writer = csv.writer(response)
-        writer.writerow(["User", "WhatsApp Number"])
+        writer.writerow(["User", "First Name", "Last Name", "WhatsApp No."])
         for user in queryset:
-            writer.writerow([user.user_name, user.whatsapp_no])  
+            writer.writerow([user.user_name, user.first_name, user.last_name, user.whatsapp_no]) 
         return response
     
     actions = [copy_whatsapp_no]
