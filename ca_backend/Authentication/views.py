@@ -196,7 +196,7 @@ class VerifyAccountView(views.APIView):
             tokens=[vm_ob.email_token for vm_ob in vm_obs]
             for i,token in enumerate(tokens):
                 serializer.data[i]["email_token"]=token
-                serializer.data[i]['is_verified'] = vm_obs[i].userid.email_verified
+                serializer.data[i]['is_verified'] = (vm_obs[i].userid.status == "V")
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(
