@@ -8,7 +8,7 @@ def populate_verification_model(apps, schema_editor):
     User = apps.get_model('Authentication', 'UserAccount')
     for user in User.objects.all():
         verif, created = Verif.objects.get_or_create(userid = user)
-        if verif:
+        if created:
             verif.email_token = uuid.uuid4()
             verif.save()
 
