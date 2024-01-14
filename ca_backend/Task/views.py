@@ -150,6 +150,8 @@ class SubmitTaskAPIView(views.APIView):
             
         image = request.data.get("image", None)
         if image is not None:
+            # Delete the previous image from storage
+            task_submission.image.delete(save=True)
             task_submission.image = image
 
         task_submission.save()
