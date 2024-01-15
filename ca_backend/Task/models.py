@@ -1,5 +1,8 @@
 from django.db import models
 import datetime
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import File
 # Create your models here.
 
 
@@ -46,3 +49,20 @@ class TaskSubmission(models.Model):
 
     def __str__(self):
         return self.task.title + " - " + self.user.user_name
+    
+    def save(self, *args, **kwargs):
+        if self.image:
+            self.image = self.compressImage(self.image)
+        super(TaskSubmission, self).save(*args, **kwargs)
+
+    def compressImage(self, uploadedImage):
+        im = Image.open(uploadedImage)
+        im_io = BytesIO() 
+        if im.mode in ("RGBA", "P"): 
+            im = im.convert("RGB")
+        try:
+            im.save(im_io, 'JPEG', quality=50) 
+            new_image = File(im_io, name=uploadedImage.name)
+            return new_image
+        except:
+            return uploadedImage
