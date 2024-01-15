@@ -9,7 +9,7 @@ try:
 except:
     SUPPORT_EMAIL = "tech@technex.in"
 
-LOGO_FILE_PATH = "./ca_backend/logo/Asset 3.png"
+LOGO_FILE_PATH = "./ca_backend/logo/asset.png"
 
 with open(LOGO_FILE_PATH, 'rb') as fp:
     IMAGE = MIMEImage(fp.read())
@@ -191,5 +191,4 @@ def send(rec_email, msg, connection: smtplib.SMTP = None):
         connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
         connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
     
-
 

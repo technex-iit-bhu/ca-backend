@@ -10,7 +10,8 @@ try:
 except:
     SUPPORT_EMAIL = "tech@technex.in"
 
-LOGO_FILE_PATH = os.path.abspath('./ca_backend/logo/Asset 3.png')
+LOGO_FILE_PATH = "./ca_backend/logo/asset.png"
+
 with open(LOGO_FILE_PATH, 'rb') as fp:
     IMAGE = MIMEImage(fp.read())
     IMAGE.add_header('Content-ID', '<logo>')
