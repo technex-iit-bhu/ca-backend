@@ -3,6 +3,7 @@ from decouple import config
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
+import os
 
 try:
     SUPPORT_EMAIL = config("SUPPORT_EMAIL")
