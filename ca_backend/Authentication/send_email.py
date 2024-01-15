@@ -29,4 +29,3 @@ def send(rec_email,msg):
         # connection.close()
     
 
-
