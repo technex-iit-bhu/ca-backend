@@ -11,17 +11,9 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework import parsers
 from Authentication.serializers import ProfileSerializer
-from .send_email import send_task_admin_comment_email, send_task_submission_email, send_task_submission_verification_email
 
 # import Url validator
 from django.core.validators import URLValidator
-
-import smtplib
-from decouple import config
-
-connection = smtplib.SMTP("smtp.gmail.com", port=587)
-connection.starttls()
-connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
 
 # Create your views here.
 
@@ -118,7 +110,6 @@ class SubmitTaskAPIView(views.APIView):
         task_submission = TaskSubmission(task=task, user=user, link=link, image=image)
         
         task_submission.save()
-        send_task_submission_email(user.user.email, user.user_name, task.title, connection)
         return Response({"status": "Task Submitted"}, status=status.HTTP_200_OK)
     
     @swagger_auto_schema(manual_parameters=[
@@ -150,8 +141,6 @@ class SubmitTaskAPIView(views.APIView):
             
         image = request.data.get("image", None)
         if image is not None:
-            # Delete the previous image from storage
-            task_submission.image.delete(save=True)
             task_submission.image = image
 
         task_submission.save()
@@ -189,8 +178,6 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
         except KeyError:
             pass
         task_submission.save()
-        # send email to the user
-        send_task_submission_verification_email(user.user.email, user.user_name, task.title, connection)
         
         return Response({"status": "Task Submission Verified"}, status=status.HTTP_200_OK)
     
@@ -211,8 +198,6 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
         task_submission = TaskSubmission.objects.get(id=task_submission_id)
         task_submission.admin_comment = request.data["admin_comment"]
         task_submission.save()
-        # send email to the user
-        send_task_admin_comment_email(task_submission.user.user.email, task_submission.user.user_name, task_submission.admin_comment, connection)
         return Response({"status": "Task Submission Commented"}, status=status.HTTP_200_OK)
     
 

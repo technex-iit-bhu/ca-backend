@@ -4,7 +4,6 @@ from rest_framework import status
 
 # Register your models here.
 from .models import Task, TaskSubmission
-from .send_email import send_task_admin_comment_email, send_task_submission_email, send_task_submission_verification_email
 
 admin.site.site_header = "Technex '24 Campus Ambassador Admin"
 admin.site.site_title = "Technex '24 Campus Ambassador Admin"
@@ -17,12 +16,6 @@ class TaskAdmin(admin.ModelAdmin):
     list_editable = ('title', 'description', 'points', 'deadline', 'image')
     list_display_links = None
     list_per_page = 10
-
-    # on creation send mail
-    def save_model(self, request, obj, form, change):
-        if not change:
-            send_task_submission_email(obj.user.user.email, obj.user.user_name, obj.title)
-        super().save_model(request, obj, form, change)
     
     model = Task
 
@@ -43,7 +36,6 @@ class TaskSubmissionAdmin(admin.ModelAdmin):
                 task_submission.verified = True
                 task_submission.user.points += task_submission.task.points
                 task_submission.user.save()
-                send_task_submission_verification_email(task_submission.user.user.email, task_submission.user.user_name, task_submission.task.title)
         queryset.update(verified=True)
 
     @admin.action(description='Unverify Task Submission')
@@ -55,13 +47,6 @@ class TaskSubmissionAdmin(admin.ModelAdmin):
                 task_submission.user.points -= task_submission.task.points
                 task_submission.user.save()
         queryset.update(verified=False)
-
-    # On admin comment send mail
-    def save_model(self, request, obj, form, change):
-        if 'admin_comment' in form.changed_data:
-            if obj.admin_comment:
-                send_task_admin_comment_email(obj.user.user.email, obj.user.user_name, obj.admin_comment)
-        super().save_model(request, obj, form, change)
     
     actions = [make_verified, make_unverified]
 
