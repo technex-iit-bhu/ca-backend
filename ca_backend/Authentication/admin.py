@@ -7,10 +7,12 @@ from .send_email import send_approved_email
 from decouple import config
 import smtplib
 
-connection = smtplib.SMTP("smtp.gmail.com", port=587)
-connection.starttls()
-connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
-
+try:
+    connection = smtplib.SMTP("smtp.gmail.com", port=587)
+    connection.starttls()
+    connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
+except:
+    connection = None
 
 class UserAccountAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'role', 'status')

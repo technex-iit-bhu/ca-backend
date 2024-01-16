@@ -6,10 +6,12 @@ from .send_email import send_task_submission_email, send_task_admin_comment_emai
 from decouple import config
 import smtplib
 
-connection = smtplib.SMTP("smtp.gmail.com", port=587)
-connection.starttls()
-connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
-
+try:
+    connection = smtplib.SMTP("smtp.gmail.com", port=587)
+    connection.starttls()
+    connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
+except:
+    connection = None
 # Register your models here.
 from .models import Task, TaskSubmission
 

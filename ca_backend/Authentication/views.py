@@ -36,9 +36,12 @@ from django.db.models import Q
 from decouple import config
 import smtplib
 
-connection = smtplib.SMTP("smtp.gmail.com", port=587)
-connection.starttls()
-connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
+try:
+    connection = smtplib.SMTP("smtp.gmail.com", port=587)
+    connection.starttls()
+    connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
+except:
+    connection = None
 
 
 
@@ -240,7 +243,6 @@ class VerifyAccountView(views.APIView):
                 )
             
             user.status = "V"
-            verif_row.delete()
             user.save()
             send_approved_email(user.email, user.username, connection)
             return Response(
