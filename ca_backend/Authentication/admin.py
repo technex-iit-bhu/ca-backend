@@ -4,6 +4,13 @@ from django.contrib import admin
 from .models import UserAccount, UserProfile, VerificationModel, ForgotPasswordOTPModel, ReferralCode
 from .send_email import send_approved_email
 
+from decouple import config
+import smtplib
+
+connection = smtplib.SMTP("smtp.gmail.com", port=587)
+connection.starttls()
+connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
+
 
 class UserAccountAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'role', 'status')
@@ -16,7 +23,7 @@ class UserAccountAdmin(admin.ModelAdmin):
     def make_verified(self, request, queryset):
         for user in queryset:
             if user.status == "P":
-                send_approved_email(user.email)
+                send_approved_email(user.email, user.username, connection)
         queryset.update(status="V")
 
 

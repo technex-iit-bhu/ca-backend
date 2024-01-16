@@ -4,34 +4,26 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 import os
+from django.conf import settings
 
 try:
     SUPPORT_EMAIL = config("SUPPORT_EMAIL")
 except:
     SUPPORT_EMAIL = "tech@technex.in"
 
-LOGO_FILE_PATH = "./ca_backend/logo/asset.png"
+LOGO_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'Asset 3.png')
 
-with open(LOGO_FILE_PATH, 'rb') as fp:
-    IMAGE = MIMEImage(fp.read())
-    IMAGE.add_header('Content-ID', '<logo>')
-    IMAGE.add_header('Content-Disposition', 'inline')  # Set the Content-Disposition header to "inline"
+if os.path.exists(LOGO_FILE_PATH):
+    with open(LOGO_FILE_PATH, 'rb') as fp:
+        IMAGE = MIMEImage(fp.read())
+        IMAGE.add_header('Content-ID', '<logo>')
+        IMAGE.add_header('Content-Disposition', 'inline')  # Set the Content-Disposition header to "inline"
 
 def send_task_admin_comment_email(rec_email, username, admin_comment, connection: smtplib.SMTP = None):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
     msg['Subject'] = "Technex'24 - Admin Comment on Your Task"
-
-    # Use images and style the email
-    if IMAGE:
-        msg.attach(IMAGE)
-    else:
-        with open(LOGO_FILE_PATH, 'rb') as fp:
-            img = MIMEImage(fp.read())
-        img.add_header('Content-ID', '<logo>')
-        img.add_header('Content-Disposition', 'inline')  # Set the Content-Disposition header to "inline"
-        msg.attach(img)
 
     html = f"""\
     <html>
@@ -54,24 +46,13 @@ def send_task_admin_comment_email(rec_email, username, admin_comment, connection
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    text = msg.as_string()
-    send(rec_email, text, connection)
+    send(rec_email, msg, connection)
 
 def send_task_submission_email(rec_email, username, task_name, connection: smtplib.SMTP = None):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
     msg['Subject'] = "Technex'24 - Task Submission Confirmation"
-
-    # Use images and style the email
-    if IMAGE:
-        msg.attach(IMAGE)
-    else:
-        with open(LOGO_FILE_PATH, 'rb') as fp:
-            img = MIMEImage(fp.read())
-        img.add_header('Content-ID', '<logo>')
-        img.add_header('Content-Disposition', 'inline')
-        msg.attach(img)
 
     html = f"""\
     <html>
@@ -89,24 +70,13 @@ def send_task_submission_email(rec_email, username, task_name, connection: smtpl
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    text = msg.as_string()
-    send(rec_email, text, connection)
+    send(rec_email, msg, connection)
 
 def send_task_submission_verification_email(rec_email, username, task_name, connection: smtplib.SMTP = None):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
     msg['Subject'] = "Technex'24 - Task Submission Verification"
-
-    # Use images and style the email
-    if IMAGE:
-        msg.attach(IMAGE)
-    else:
-        with open(LOGO_FILE_PATH, 'rb') as fp:
-            img = MIMEImage(fp.read())
-        img.add_header('Content-ID', '<logo>')
-        img.add_header('Content-Disposition', 'inline')
-        msg.attach(img)
 
     html = f"""\
     <html>
@@ -124,13 +94,24 @@ def send_task_submission_verification_email(rec_email, username, task_name, conn
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    text = msg.as_string()
-    send(rec_email, text, connection)
+    send(rec_email, msg, connection)
 
 def send(rec_email, msg, connection: smtplib.SMTP = None):
     """
     Function to send verification email to the user 
     """
+    if IMAGE:
+        msg.attach(IMAGE)
+    else:
+        if os.path.exists(LOGO_FILE_PATH):
+            with open(LOGO_FILE_PATH, 'rb') as fp:
+                img = MIMEImage(fp.read())
+            img.add_header('Content-ID', '<logo>')
+            img.add_header('Content-Disposition', 'inline')
+            msg.attach(img)
+    
+    msg = msg.as_string()   
+
     if connection:
         connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
     else:
