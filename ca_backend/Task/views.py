@@ -11,9 +11,20 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework import parsers
 from Authentication.serializers import ProfileSerializer
+from .send_email import send_task_submission_email, send_task_submission_verification_email, send_task_admin_comment_email
 
 # import Url validator
 from django.core.validators import URLValidator
+
+from decouple import config
+import smtplib
+
+try:
+    connection = smtplib.SMTP("smtp.gmail.com", port=587)
+    connection.starttls()
+    connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
+except:
+    connection = None
 
 # Create your views here.
 
@@ -141,6 +152,8 @@ class SubmitTaskAPIView(views.APIView):
             
         image = request.data.get("image", None)
         if image is not None:
+            # delete previous image
+            task_submission.image.delete(save=True)
             task_submission.image = image
 
         task_submission.save()
@@ -178,6 +191,7 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
         except KeyError:
             pass
         task_submission.save()
+        send_task_submission_verification_email(user.user.email, user.user_name, task.title, connection)
         
         return Response({"status": "Task Submission Verified"}, status=status.HTTP_200_OK)
     
@@ -198,6 +212,7 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
         task_submission = TaskSubmission.objects.get(id=task_submission_id)
         task_submission.admin_comment = request.data["admin_comment"]
         task_submission.save()
+        send_task_admin_comment_email(task_submission.user.user.email, task_submission.user.user_name, task_submission.admin_comment, connection)
         return Response({"status": "Task Submission Commented"}, status=status.HTTP_200_OK)
     
 
