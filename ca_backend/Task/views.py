@@ -121,6 +121,7 @@ class SubmitTaskAPIView(views.APIView):
         task_submission = TaskSubmission(task=task, user=user, link=link, image=image)
         
         task_submission.save()
+        send_task_submission_email(user.user.email, user.user_name, task.title, connection)
         return Response({"status": "Task Submitted"}, status=status.HTTP_200_OK)
     
     @swagger_auto_schema(manual_parameters=[
