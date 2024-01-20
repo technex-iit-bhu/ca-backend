@@ -136,7 +136,7 @@ def send_otp_email(rec_email,otp, username, connection: smtplib.SMTP = None):
     send(rec_email, msg, connection)
     
 
-def send(rec_email,msg):
+def send(rec_email, msg, connection: smtplib.SMTP = None):
     """
     Function to send verification email to the user 
     """
@@ -158,8 +158,7 @@ def send(rec_email,msg):
     else:
         connection = smtplib.SMTP("smtp.gmail.com", port=587)
         connection.starttls()
-        connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
-        connection.sendmail(from_addr=config("EMAIL_HOST_USER"), to_addrs=rec_email,msg=msg)
-        # connection.close()
+        connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
+        connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
     
 
