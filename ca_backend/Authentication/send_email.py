@@ -12,7 +12,7 @@ except:
     SUPPORT_EMAIL = "tech@technex.in"
 
 LOGO_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'Asset 3.png')
-
+IMAGE = None 
 if os.path.exists(LOGO_FILE_PATH):
     with open(LOGO_FILE_PATH, 'rb') as fp:
         IMAGE = MIMEImage(fp.read())
