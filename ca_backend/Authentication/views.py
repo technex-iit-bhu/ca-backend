@@ -99,11 +99,23 @@ class RegisterView(generics.GenericAPIView):
             referral_code = ReferralCode(user=user, referral_code=f"tnx24_{user.username}")
             referral_code.save()
             # send email to the user containing a link to verify their email
-            send_email_verif_email(user.email, email_token,  user.username, connection)
-            return Response(
-                {"success": "Verification link has been sent by email!"},
-                status=status.HTTP_200_OK,
-            )
+            try:
+                send_email_verif_email(user.email, email_token,  user.username, connection)
+                return Response(
+                    {"success": "Verification link has been sent by email!"},
+                    status=status.HTTP_200_OK,
+                )
+            except Exception as e:
+                # Delete all created models
+                user.delete()
+                user_serializer.delete()
+                verif_row.delete()
+                referral_code.delete()
+                profile_serializer.delete()
+                return Response(
+                    {"error": "There was an error in Registering the user. Please try again later!"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
         else:
             error = {}
@@ -242,9 +254,15 @@ class VerifyAccountView(views.APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             
+            try:
+                send_approved_email(user.email, user.username, connection)
+            except Exception as e:
+                return Response(
+                    {"error": "There was an error in Approving the user. Please try again later!"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
             user.status = "V"
             user.save()
-            send_approved_email(user.email, user.username, connection)
             return Response(
                 {"success": "User verified successfully!"},
                 status=status.HTTP_200_OK,
@@ -282,11 +300,17 @@ class VerifyEmailView(views.APIView):
         user = verif_row.userid
         if user.email_verified:
             return HttpResponseRedirect(redirect_to=config("FRONTEND_URL")+"/login")
+        try:
+            send_email_cnf_email(user.email, user.username, connection)
+        except Exception as e:
+            return Response(
+                {"error": "There was an error in Confirming the user. Please try again later!"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         user.email_verified = True
         user.save()
         # send_approved_email(user.email)
         # send email informing the user that email has been verified and account will shortly be activated after a review by our team
-        send_email_cnf_email(user.email, user.username, connection)
         print("returning success resp")
         return HttpResponseRedirect(redirect_to=config("FRONTEND_URL")+"/login")
 
@@ -303,6 +327,7 @@ class ForgotPasswordOTPCreationView(generics.GenericAPIView):
         responses={
             201: """{"detail": "OTP generated successfully"}""",
             404: """{"detail": "No such user"}""",
+            409: """{"error": "There was an error in sending the OTP. Please try again later!"}""",
         }
     )
     def post(self, request):
@@ -318,7 +343,14 @@ class ForgotPasswordOTPCreationView(generics.GenericAPIView):
                 user_otp.save()
             else:
                 ForgotPasswordOTPModel.objects.create(user=user, otp=otp)
-            send_otp_email(user.email, otp, user.username, connection)
+            try:
+                send_otp_email(user.email, otp, user.username, connection)
+            except Exception as e:
+                user_otp.delete()
+                return Response(
+                    {"error": "There was an error in sending the OTP. Please try again later!"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
             return Response(
                 {"detail": "OTP generated successfully"}, status=status.HTTP_201_CREATED
             )
