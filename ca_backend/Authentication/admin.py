@@ -25,7 +25,7 @@ class UserAccountAdmin(admin.ModelAdmin):
     def make_verified(self, request, queryset):
         for user in queryset:
             if user.status == "P":
-                send_approved_email(user.email)
+                send_approved_email(user.email, user.username, connection)
         queryset.update(status="V")
 
 
