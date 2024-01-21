@@ -442,4 +442,35 @@ class AvatarChangeView(views.APIView):
         profile.avatar_id = avatar_id
         profile.save()
         return Response({"detail": "Avatar changed successfully"}, status=status.HTTP_200_OK)
-    
+
+
+class IncrementCAReferrals(views.APIView):
+    """
+    Increments the referrals of the user
+    """
+    permission_classes = []
+    @swagger_auto_schema(
+        responses={
+            200: """{"detail": "Referrals incremented successfully"}""",
+        },
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'referral_code': openapi.Schema(type=openapi.TYPE_STRING, description='Referral code of the user'),
+                'api_key': openapi.Schema(type=openapi.TYPE_STRING, description='API key'),
+            },
+        ),
+    )
+    def patch(self, request):
+        api_key = request.data["api_key"]
+        if api_key != config("API_KEY"):
+            return Response({"detail": "Invalid API key"}, status=status.HTTP_401_UNAUTHORIZED)
+        referral_code = request.data["referral_code"]
+        rc = ReferralCode.objects.prefetch_related("user__userprofile").filter(referral_code=referral_code).first()
+        if rc is None:
+            return Response({"detail": "Invalid referral code"}, status=status.HTTP_404_NOT_FOUND)
+        
+        profile = rc.user.userprofile
+        profile.referrals += 1
+        profile.save()
+        return Response({"detail": "Referrals incremented successfully"}, status=status.HTTP_200_OK)

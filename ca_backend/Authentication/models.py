@@ -60,6 +60,7 @@ class UserProfile(models.Model):
     why_choose = models.TextField()
     were_you_ca = models.BooleanField(default=False)
     points = models.IntegerField(default=0)
+    referrals = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.user_name} - {self.first_name} - {self.last_name} - {self.college}"
