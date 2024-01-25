@@ -153,14 +153,14 @@ def send(rec_email, msg, connection: smtplib.SMTP = None):
     
     msg = msg.as_string()
 
-    try:
-        if connection:
-            connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
-    except:
-            connection = smtplib.SMTP("smtp.gmail.com", port=587)
-            connection.starttls()
-            connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
-            connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
+    
+    if connection:
+        connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
+    else:
+        connection = smtplib.SMTP("smtp.gmail.com", port=587)
+        connection.starttls()
+        connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
+        connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
             
     
 

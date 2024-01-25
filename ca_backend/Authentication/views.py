@@ -107,11 +107,9 @@ class RegisterView(generics.GenericAPIView):
                 )
             except Exception as e:
                 # Delete all created models
-                user.delete()
-                user_serializer.delete()
-                verif_row.delete()
-                referral_code.delete()
-                profile_serializer.delete()
+                user = UserAccount.objects.filter(email=user.email).first()
+                if user is not None:
+                    user.delete()
                 return Response(
                     {"error": "There was an error in Registering the user. Please try again later!"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
