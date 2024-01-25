@@ -344,7 +344,9 @@ class ForgotPasswordOTPCreationView(generics.GenericAPIView):
             try:
                 send_otp_email(user.email, otp, user.username, connection)
             except Exception as e:
-                user_otp.delete()
+                otp = ForgotPasswordOTPModel.objects.filter(user=user).first()
+                if otp is not None:
+                    otp.delete()
                 return Response(
                     {"error": "There was an error in sending the OTP. Please try again later!"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
