@@ -34,14 +34,6 @@ from django.contrib.auth import password_validation
 from django.db.models import Q
 
 from decouple import config
-import smtplib
-
-try:
-    connection = smtplib.SMTP("smtp.gmail.com", port=587)
-    connection.starttls()
-    connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
-except:
-    connection = None
 
 
 
@@ -100,7 +92,7 @@ class RegisterView(generics.GenericAPIView):
             referral_code.save()
             # send email to the user containing a link to verify their email
             try:
-                send_email_verif_email(user.email, email_token,  user.username, connection)
+                send_email_verif_email(user.email, email_token,  user.username)
                 return Response(
                     {"success": "Verification link has been sent by email!"},
                     status=status.HTTP_200_OK,
@@ -253,7 +245,7 @@ class VerifyAccountView(views.APIView):
                 )
             
             try:
-                send_approved_email(user.email, user.username, connection)
+                send_approved_email(user.email, user.username)
             except Exception as e:
                 return Response(
                     {"error": "There was an error in Approving the user. Please try again later!"},
@@ -299,7 +291,7 @@ class VerifyEmailView(views.APIView):
         if user.email_verified:
             return HttpResponseRedirect(redirect_to=config("FRONTEND_URL")+"/login")
         try:
-            send_email_cnf_email(user.email, user.username, connection)
+            send_email_cnf_email(user.email, user.username)
         except Exception as e:
             return Response(
                 {"error": "There was an error in Confirming the user. Please try again later!"},
@@ -342,7 +334,7 @@ class ForgotPasswordOTPCreationView(generics.GenericAPIView):
             else:
                 ForgotPasswordOTPModel.objects.create(user=user, otp=otp)
             try:
-                send_otp_email(user.email, otp, user.username, connection)
+                send_otp_email(user.email, otp, user.username)
             except Exception as e:
                 otp = ForgotPasswordOTPModel.objects.filter(user=user).first()
                 if otp is not None:
