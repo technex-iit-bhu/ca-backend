@@ -13,6 +13,7 @@ except:
 
 LOGO_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'Asset 3.png')
 IMAGE = None 
+IMAGE = None 
 if os.path.exists(LOGO_FILE_PATH):
     with open(LOGO_FILE_PATH, 'rb') as fp:
         IMAGE = MIMEImage(fp.read())
@@ -161,6 +162,5 @@ def send(rec_email, msg, connection: smtplib.SMTP = None):
         connection.starttls()
         connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
         connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
-            
     
 
