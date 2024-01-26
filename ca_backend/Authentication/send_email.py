@@ -154,20 +154,13 @@ def send(rec_email, msg, connection: smtplib.SMTP = None):
     
     msg = msg.as_string()
 
-    try:
-        if connection:
-            connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
-        else:
-            with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
-                connection.starttls()
-                connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
-                connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
-    except Exception as e:
-        # Handle the exception (e.g., log it)
-        print(f"Failed to send email: {e}")
-    finally:
-        if not connection:
-            # Close the connection if it was created within the function
-            connection.quit()
+    
+    if connection:
+        connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
+    else:
+        connection = smtplib.SMTP("smtp.gmail.com", port=587)
+        connection.starttls()
+        connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
+        connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
     
 
