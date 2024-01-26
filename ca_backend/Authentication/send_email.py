@@ -22,7 +22,7 @@ if os.path.exists(LOGO_FILE_PATH):
         IMAGE.add_header('Content-Disposition', 'inline')  # Set the Content-Disposition header to "inline"
 
 #todo: improve messages
-def send_email_cnf_email(rec_email, username, connection: smtplib.SMTP = None):
+def send_email_cnf_email(rec_email, username):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
@@ -50,10 +50,10 @@ def send_email_cnf_email(rec_email, username, connection: smtplib.SMTP = None):
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    send(rec_email, msg, connection)
+    send(rec_email, msg)
 
 
-def send_email_verif_email(rec_email, token, username, connection: smtplib.SMTP = None):
+def send_email_verif_email(rec_email, token, username):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
@@ -81,9 +81,9 @@ def send_email_verif_email(rec_email, token, username, connection: smtplib.SMTP 
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    send(rec_email, msg, connection)
+    send(rec_email, msg)
 
-def send_approved_email(rec_email, username, connection: smtplib.SMTP = None):
+def send_approved_email(rec_email, username):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
@@ -106,9 +106,9 @@ def send_approved_email(rec_email, username, connection: smtplib.SMTP = None):
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    send(rec_email, msg, connection)
+    send(rec_email, msg)
 
-def send_otp_email(rec_email,otp, username, connection: smtplib.SMTP = None):
+def send_otp_email(rec_email,otp, username):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
@@ -134,10 +134,10 @@ def send_otp_email(rec_email,otp, username, connection: smtplib.SMTP = None):
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    send(rec_email, msg, connection)
+    send(rec_email, msg)
     
 
-def send(rec_email, msg, connection: smtplib.SMTP = None):
+def send(rec_email, msg):
     """
     Function to send verification email to the user 
     """
@@ -154,20 +154,12 @@ def send(rec_email, msg, connection: smtplib.SMTP = None):
     
     msg = msg.as_string()
 
-    try:
-        if connection:
-            connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
-        else:
-            with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
-                connection.starttls()
-                connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
-                connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
-    except Exception as e:
-        # Handle the exception (e.g., log it)
-        print(f"Failed to send email: {e}")
-    finally:
-        if not connection:
-            # Close the connection if it was created within the function
-            connection.quit()
+    
+    connection = smtplib.SMTP("smtp.gmail.com", port=587)
+    connection.starttls()
+    connection.ehlo_or_helo_if_needed()
+    connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
+    connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
+    connection.quit()
     
 

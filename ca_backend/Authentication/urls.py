@@ -8,7 +8,8 @@ from .views import (
     VerifyOTPView,
     ResetPasswordAPIView,
     AvatarChangeView, 
-    CustomTokenObtainPairView
+    CustomTokenObtainPairView,
+    IncrementCAReferrals
 )
 
 from rest_framework_simplejwt.views import (
@@ -36,5 +37,6 @@ urlpatterns = [
         ResetPasswordAPIView.as_view(),
         name="reset_password",
     ),
-    path("user/profile/change_avatar/<int:avatar_id>/",AvatarChangeView.as_view(),name="change_avatar")
+    path("user/profile/change_avatar/<int:avatar_id>/",AvatarChangeView.as_view(),name="change_avatar"),
+    path("user/profile/increment_referrals/",IncrementCAReferrals.as_view(),name="increment_referrals")
 ]
