@@ -17,14 +17,6 @@ from .send_email import send_task_submission_email, send_task_submission_verific
 from django.core.validators import URLValidator
 
 from decouple import config
-import smtplib
-
-try:
-    connection = smtplib.SMTP("smtp.gmail.com", port=587)
-    connection.starttls()
-    connection.login(user=config("EMAIL_HOST_USER"), password=config("EMAIL_HOST_PASSWORD"))
-except:
-    connection = None
 
 # Create your views here.
 
@@ -119,7 +111,7 @@ class SubmitTaskAPIView(views.APIView):
 
         image = request.data.get("image", None)    
         try:
-            send_task_submission_email(user.user.email, user.user_name, task.title, connection)
+            send_task_submission_email(user.user.email, user.user_name, task.title)
         except:
             return Response({"status": "There was an error submitting the task. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         task_submission = TaskSubmission(task=task, user=user, link=link, image=image)
@@ -185,7 +177,7 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
             return Response({"status": "Task Submission Already Verified"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            send_task_submission_verification_email(user.user.email, user.user_name, task.title, connection)
+            send_task_submission_verification_email(user.user.email, user.user_name, task.title)
         except:
             return Response({"status": "There was an error verifying the task submission. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         user = task_submission.user
@@ -219,7 +211,7 @@ class AdminVerifyTaskSubmissionAPIView(views.APIView):
         task_submission = TaskSubmission.objects.get(id=task_submission_id)
         task_submission.admin_comment = request.data["admin_comment"]
         try:
-            send_task_admin_comment_email(task_submission.user.user.email, task_submission.user.user_name, task_submission.admin_comment, connection)
+            send_task_admin_comment_email(task_submission.user.user.email, task_submission.user.user_name, task_submission.admin_comment)
         except:
             return Response({"status": "There was an error commenting on the task submission. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         task_submission.save()

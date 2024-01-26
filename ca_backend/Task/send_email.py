@@ -19,7 +19,7 @@ if os.path.exists(LOGO_FILE_PATH):
         IMAGE.add_header('Content-ID', '<logo>')
         IMAGE.add_header('Content-Disposition', 'inline')  # Set the Content-Disposition header to "inline"
 
-def send_task_admin_comment_email(rec_email, username, admin_comment, connection: smtplib.SMTP = None):
+def send_task_admin_comment_email(rec_email, username, admin_comment):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
@@ -46,9 +46,9 @@ def send_task_admin_comment_email(rec_email, username, admin_comment, connection
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    send(rec_email, msg, connection)
+    send(rec_email, msg)
 
-def send_task_submission_email(rec_email, username, task_name, connection: smtplib.SMTP = None):
+def send_task_submission_email(rec_email, username, task_name):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
@@ -70,9 +70,9 @@ def send_task_submission_email(rec_email, username, task_name, connection: smtpl
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    send(rec_email, msg, connection)
+    send(rec_email, msg)
 
-def send_task_submission_verification_email(rec_email, username, task_name, connection: smtplib.SMTP = None):
+def send_task_submission_verification_email(rec_email, username, task_name):
     msg = MIMEMultipart()
     msg['From'] = config("EMAIL_HOST_USER")
     msg['To'] = rec_email
@@ -94,9 +94,9 @@ def send_task_submission_verification_email(rec_email, username, task_name, conn
     """
     body = html
     msg.attach(MIMEText(body, 'html'))
-    send(rec_email, msg, connection)
+    send(rec_email, msg)
 
-def send(rec_email, msg, connection: smtplib.SMTP = None):
+def send(rec_email, msg):
     """
     Function to send verification email to the user 
     """
@@ -112,11 +112,10 @@ def send(rec_email, msg, connection: smtplib.SMTP = None):
     
     msg = msg.as_string()   
 
-    try:
-        if connection:
-            connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
-    except:
-        connection = smtplib.SMTP("smtp.gmail.com", port=587)
-        connection.starttls()
-        connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
-        connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
+
+    connection = smtplib.SMTP("smtp.gmail.com", port=587)
+    connection.starttls()
+    connection.ehlo_or_helo_if_needed()
+    connection.login(config("EMAIL_HOST_USER"), config("EMAIL_HOST_PASSWORD"))
+    connection.sendmail(config("EMAIL_HOST_USER"), rec_email, msg)
+    connection.quit()
