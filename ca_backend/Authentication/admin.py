@@ -31,9 +31,9 @@ class UserAccountAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=emails.csv'
         writer = csv.writer(response)
-        writer.writerow(["Email"])
+        writer.writerow(["Username", "Email"])
         for user in queryset:
-            writer.writerow([user.email])
+            writer.writerow([user.username, user.email])
         return response
     
     @admin.action(description='Delete Admin Logs')
