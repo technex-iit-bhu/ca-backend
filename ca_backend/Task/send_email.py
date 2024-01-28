@@ -5,19 +5,20 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 import os
 from django.conf import settings
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name=config("CLOUDINARY_CLOUD_NAME"),
+    api_key=config("CLOUDINARY_API_KEY"),
+    api_secret=config("CLOUDINARY_API_SECRET"),
+)
 
 try:
     SUPPORT_EMAIL = config("SUPPORT_EMAIL")
 except:
     SUPPORT_EMAIL = "tech@technex.in"
 
-LOGO_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'Asset 3.png')
-IMAGE = None
-if os.path.exists(LOGO_FILE_PATH):
-    with open(LOGO_FILE_PATH, 'rb') as fp:
-        IMAGE = MIMEImage(fp.read())
-        IMAGE.add_header('Content-ID', '<logo>')
-        IMAGE.add_header('Content-Disposition', 'inline')  # Set the Content-Disposition header to "inline"
+LOGO_IMG = cloudinary.api.resource(config("LOGO_IMG"), format="png")
 
 def send_task_admin_comment_email(rec_email, username, admin_comment):
     msg = MIMEMultipart()
@@ -29,7 +30,7 @@ def send_task_admin_comment_email(rec_email, username, admin_comment):
     <html>
         <head></head>
         <body>
-        <center><img src="cid:logo" alt="logo" border="0" width="200" height="200"></center>
+        <center><a href="{config('FRONTEND_URL')}"><img src="{LOGO_IMG['secure_url']}" alt="Technex '24" border="0" width="200" height="200" draggable="false"></a></center>
             <h3>Dear {username},</h3>
             <br>
             <p>An admin has  reviewed your submitted task and provided the following comment:</p>
@@ -58,7 +59,7 @@ def send_task_submission_email(rec_email, username, task_name):
     <html>
         <head></head>
         <body>
-        <center><img src="cid:logo" alt="logo" border="0" width="200" height="200"></center>
+        <center><a href="{config('FRONTEND_URL')}"><img src="{LOGO_IMG['secure_url']}" alt="Technex '24" border="0" width="200" height="200" draggable="false"></a></center>
             <h3>Dear {username},</h3>
             <br>
             <p>Thank you for submitting your task {task_name} to Technex'24. We are delighted to inform you that your task has been received and processed successfully.</p>
@@ -82,7 +83,7 @@ def send_task_submission_verification_email(rec_email, username, task_name):
     <html>
         <head></head>
         <body>
-        <center><img src="cid:logo" alt="logo" border="0" width="200" height="200"></center>
+        <center><a href="{config('FRONTEND_URL')}"><img src="{LOGO_IMG['secure_url']}" alt="Technex '24" border="0" width="200" height="200" draggable="false"></a></center>
             <h3>Dear {username},</h3>
             <br>
             <p>We are pleased to inform you that your task {task_name} has been successfully verified. Thank you for completing the task promptly.</p>
@@ -100,16 +101,6 @@ def send(rec_email, msg):
     """
     Function to send verification email to the user 
     """
-    if IMAGE:
-        msg.attach(IMAGE)
-    else:
-        if os.path.exists(LOGO_FILE_PATH):
-            with open(LOGO_FILE_PATH, 'rb') as fp:
-                img = MIMEImage(fp.read())
-            img.add_header('Content-ID', '<logo>')
-            img.add_header('Content-Disposition', 'inline')
-            msg.attach(img)
-    
     msg = msg.as_string()   
 
 

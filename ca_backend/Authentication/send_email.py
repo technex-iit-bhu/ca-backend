@@ -5,20 +5,21 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 import os
 from django.conf import settings
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name=config("CLOUDINARY_CLOUD_NAME"),
+    api_key=config("CLOUDINARY_API_KEY"),
+    api_secret=config("CLOUDINARY_API_SECRET"),
+)
 
 try:
     SUPPORT_EMAIL = config("SUPPORT_EMAIL")
 except:
     SUPPORT_EMAIL = "tech@technex.in"
 
-LOGO_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'Asset 3.png')
-IMAGE = None
-if os.path.exists(LOGO_FILE_PATH):
-    with open(LOGO_FILE_PATH, 'rb') as fp:
-        IMAGE = MIMEImage(fp.read())
+LOGO_IMG = cloudinary.api.resource(config("LOGO_IMG"), format="png")
 
-        IMAGE.add_header('Content-ID', '<logo>')
-        IMAGE.add_header('Content-Disposition', 'inline')  # Set the Content-Disposition header to "inline"
 
 #todo: improve messages
 def send_email_cnf_email(rec_email, username):
@@ -32,7 +33,7 @@ def send_email_cnf_email(rec_email, username):
     <html>
         <head></head>
         <body>
-        <center><img src="cid:logo" alt="Technex '24" border="0" width="200" height="200"></center>
+        <center><a href="{config('FRONTEND_URL')}"><img src="{LOGO_IMG['secure_url']}" alt="Technex '24" border="0" width="200" height="200" draggable="false"></a></center>
             <h3>Dear {username},</h3>
             <br>
             <p>Great news! Your email address has been successfully verified for your Technex'24 account. Please wait for our admins to verify your account. Once that is done we will contact you and you will be able to log in to your account.</p>
@@ -63,7 +64,7 @@ def send_email_verif_email(rec_email, token, username):
     <html>
         <head></head>
         <body>
-        <center><img src="cid:logo" alt="Technex '24" border="0" width="200" height="200"></center>
+        <center><a href="{config('FRONTEND_URL')}"><img src="{LOGO_IMG['secure_url']}" alt="Technex '24" border="0" width="200" height="200" draggable="false"></a></center>
             <h3>Dear {username},</h3>
             <br>
             <p>Congratulations! Your account on Technex'24 has been successfully created. Please click on the following button to confirm and activate your account</p>
@@ -92,7 +93,7 @@ def send_approved_email(rec_email, username):
     <html>
         <head></head>
         <body>
-        <center><img src="cid:logo" alt="Technex '24" border="0" width="200" height="200"></center>
+        <center><a href="{config('FRONTEND_URL')}"><img src="{LOGO_IMG['secure_url']}" alt="Technex '24" border="0" width="200" height="200" draggable="false"></a></center>
             <h3>Dear {username},</h3>
             <br>
             <p>We are pleased to inform you that your Technex'24 account has been successfully verified. Thank you for completing the verification process promptly.</p>
@@ -117,7 +118,7 @@ def send_otp_email(rec_email,otp, username):
     <html>
         <head></head>
         <body>
-        <center><img src="cid:logo" alt="Technex '24" border="0" width="200" height="200"></center>
+        <center><a href="{config('FRONTEND_URL')}"><img src="{LOGO_IMG['secure_url']}" alt="Technex '24" border="0" width="200" height="200" draggable="false"></a></center>
             <h3>Dear {username},</h3>
             <br>
             <p>Here is your OTP for verification:</p>
@@ -140,17 +141,6 @@ def send(rec_email, msg):
     """
     Function to send verification email to the user 
     """
-    # Add Image
-    if IMAGE:
-        msg.attach(IMAGE)
-    else:
-        if os.path.exists(LOGO_FILE_PATH):
-            with open(LOGO_FILE_PATH, 'rb') as fp:
-                img = MIMEImage(fp.read())
-            img.add_header('Content-ID', '<logo>')
-            img.add_header('Content-Disposition', 'inline')
-            msg.attach(img)
-    
     msg = msg.as_string()
 
     
