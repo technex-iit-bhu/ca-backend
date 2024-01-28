@@ -2,7 +2,9 @@ from django.db import models
 import datetime
 from PIL import Image
 from io import BytesIO
-from django.core.files import File
+from django.core.files.images import ImageFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
+import sys
 # Create your models here.
 
 
@@ -56,13 +58,11 @@ class TaskSubmission(models.Model):
         super(TaskSubmission, self).save(*args, **kwargs)
 
     def compressImage(self, uploadedImage):
-        im = Image.open(uploadedImage)
-        im_io = BytesIO() 
-        if im.mode in ("RGBA", "P"): 
-            im = im.convert("RGB")
-        try:
-            im.save(im_io, 'JPEG', quality=50) 
-            new_image = File(im_io, name=uploadedImage.name)
-            return new_image
-        except:
-            return uploadedImage
+        imageTemporary = Image.open(uploadedImage)
+        outputIoStream = BytesIO()
+        if imageTemporary.mode in ("RGBA", "P"):
+            imageTemporary = imageTemporary.convert("RGB")
+        imageTemporary.save(outputIoStream, format='JPEG', quality=60)
+        outputIoStream.seek(0)
+        uploadedImage = InMemoryUploadedFile(outputIoStream, 'ImageField', f"{uploadedImage.name.split('.')[0]}.jpg", 'image/jpeg', sys.getsizeof(outputIoStream), None)
+        return uploadedImage
