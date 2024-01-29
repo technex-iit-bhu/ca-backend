@@ -18,7 +18,12 @@ try:
 except:
     SUPPORT_EMAIL = "tech@technex.in"
 
-LOGO_IMG = cloudinary.api.resource(config("LOGO_IMG"), format="png")
+try:
+    LOGO_IMG = cloudinary.api.resource(config("LOGO_IMG"), format="png")
+except Exception as e:
+    LOGO_IMG = {
+        "secure_url": ""
+    }
 
 
 #todo: improve messages

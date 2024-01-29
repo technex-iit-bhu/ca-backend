@@ -18,7 +18,12 @@ try:
 except:
     SUPPORT_EMAIL = "tech@technex.in"
 
-LOGO_IMG = cloudinary.api.resource(config("LOGO_IMG"), format="png")
+try:
+    LOGO_IMG = cloudinary.api.resource(config("LOGO_IMG"), format="png")
+except Exception as e:
+    LOGO_IMG = {
+        "secure_url": ""
+    }
 
 def send_task_admin_comment_email(rec_email, username, admin_comment):
     msg = MIMEMultipart()
