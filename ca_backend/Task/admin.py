@@ -1,4 +1,7 @@
+from typing import Any
 from django.contrib import admin
+from django.db.models.query import QuerySet
+from django.http.request import HttpRequest
 from rest_framework.response import Response
 from rest_framework import status
 from .send_email import send_task_submission_email, send_task_admin_comment_email, send_task_submission_verification_email
@@ -54,6 +57,12 @@ class TaskSubmissionAdmin(admin.ModelAdmin):
                 task_submission.user.points -= task_submission.task.points
                 task_submission.user.save()
         queryset.update(verified=False)
+
+    def delete_queryset(self, request: HttpRequest, queryset: QuerySet[Any]) -> None:
+        for task_submission in queryset:
+            if task_submission.image:
+                task_submission.image.delete(save=True)
+        return super().delete_queryset(request, queryset)
     
     actions = [make_verified, make_unverified]
 
