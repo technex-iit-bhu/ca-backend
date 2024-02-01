@@ -45,7 +45,7 @@ class TaskSubmission(models.Model):
     user = models.ForeignKey("Authentication.UserProfile", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     link = models.URLField(blank=True, null=True, help_text="Link to the Task Submission")
-    image = models.ImageField(upload_to=sumbission_upload_to, null=True, blank=True, help_text="Image of the Task Submission")
+    image = models.ImageField(upload_to=sumbission_upload_to, null=True, blank=True, help_text="Image of the Task Submission", max_length=255)
     verified = models.BooleanField(default=False, help_text="Whether the Task Submission is Verified")
     admin_comment = models.TextField(blank=True, null=True, help_text="Admin Comment for the Task Submission")
 
