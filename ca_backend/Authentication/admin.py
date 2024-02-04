@@ -54,6 +54,18 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display_links = None
     list_per_page = 10
 
+    @admin.action(description="Copy all details")
+    def copy_all(self, request, queryset):
+        import csv
+        from django.http import HttpResponse
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=users.csv'
+        writer = csv.writer(response)
+        writer.writerow(["Username", "Email", "First Name", "Last Name", "College", "Year", "Phone No.", "WhatsApp No.", "Postal Address", "Pin Code", "Why Choose", "Were You CA", "Points"])
+        for user in queryset:
+            writer.writerow([user.user_name, user.user.email, user.first_name, user.last_name, user.college, user.year, user.phone_no, user.whatsapp_no, user.postal_address, user.pin_code, user.why_choose, user.were_you_ca, user.points])
+        return response
+
     @admin.action(description='Copy WhatsApp No.')
     def copy_whatsapp_no(self, request, queryset):
         import csv
@@ -66,7 +78,7 @@ class UserProfileAdmin(admin.ModelAdmin):
             writer.writerow([user.user_name, user.whatsapp_no])  
         return response
     
-    actions = [copy_whatsapp_no]
+    actions = [copy_whatsapp_no, copy_all]
 
     model = UserProfile
 
