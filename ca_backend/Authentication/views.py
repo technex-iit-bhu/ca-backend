@@ -103,7 +103,8 @@ class RegisterView(generics.GenericAPIView):
                 if user is not None:
                     user.delete()
                 return Response(
-                    {"error": "There was an error in Registering the user. Please try again later!"},
+                    {"status": "There was an error in Registering the user. Please try again later!",
+                    "error": str(e)},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
@@ -248,7 +249,8 @@ class VerifyAccountView(views.APIView):
                 send_approved_email(user.email, user.username)
             except Exception as e:
                 return Response(
-                    {"error": "There was an error in Approving the user. Please try again later!"},
+                    {"status": "There was an error in Approving the user. Please try again later!",
+                     "error": str(e)},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
             user.status = "V"
@@ -294,7 +296,8 @@ class VerifyEmailView(views.APIView):
             send_email_cnf_email(user.email, user.username)
         except Exception as e:
             return Response(
-                {"error": "There was an error in Confirming the user. Please try again later!"},
+                {"status": "There was an error in Confirming the user. Please try again later!",
+                 "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         user.email_verified = True
@@ -340,7 +343,8 @@ class ForgotPasswordOTPCreationView(generics.GenericAPIView):
                 if otp is not None:
                     otp.delete()
                 return Response(
-                    {"error": "There was an error in sending the OTP. Please try again later!"},
+                    {"status": "There was an error in sending the OTP. Please try again later!",
+                     "error": str(e)},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
             return Response(
